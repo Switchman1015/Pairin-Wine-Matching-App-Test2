@@ -2,173 +2,117 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <!-- 拡大縮小を禁止（ダブルタップ/ピンチズーム抑止） -->
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-    />
+    <!-- ズーム禁止 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
     <title>Pairin - Wine Matching</title>
     <style>
       :root{
         color-scheme: light dark;
         --fg:#fdf8f5;
-        --muted:rgba(253,248,245,.78);
+        --muted:rgba(253,248,245,.86);
         --accent:#ff6d7a;
         --card:rgba(255,255,255,.06);
-        --glass:rgba(16,10,22,.55);    /* フレーム内の曇りガラス色 */
+        --glass:rgba(16,10,22,.28);  /* ← フレームの透明度を下げて“半透明”へ */
         --radius:28px;
         --shadow:0 24px 80px rgba(0,0,0,.35);
         font-family:"Inter","Noto Sans JP",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       }
 
-      /* === ページ全体のスクロール/ズーム無効 & スクロールバー非表示 === */
-      html, body{
-        height:100%;
-        overflow:hidden;                 /* スクロール禁止 */
-        margin:0;
-        -webkit-text-size-adjust:100%;
-        touch-action:manipulation;       /* ダブルタップズーム無効（タップ操作は可） */
-        background:#000;
-      }
-      /* 背景画像 */
+      /* スクロール/ズーム無効 & スクロールバー非表示 */
+      html, body{ height:100%; overflow:hidden; margin:0; -webkit-text-size-adjust:100%; touch-action:manipulation; background:#000; }
+      *{ box-sizing:border-box; }
+      *::-webkit-scrollbar{ display:none; } *{ scrollbar-width:none; -ms-overflow-style:none; }
+
+      /* 背景：上→下で暗くなるグラデーション + 写真 */
       body{
         color:var(--fg);
         background:
-          linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55)),
+          linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.25) 55%, rgba(0,0,0,.66) 85%, rgba(0,0,0,.78) 100%),
           url("./pairin_title_bg.jpg") center center / cover no-repeat fixed;
-        display:flex;
-        align-items:center;
-        justify-content:center;
+        display:flex; align-items:center; justify-content:center;
         padding:clamp(16px,4vw,32px);
       }
-      /* スクロールバー非表示（念のため全ブラウザ系） */
-      *{ box-sizing:border-box; }
-      *::-webkit-scrollbar{ display:none; }
-      *{ scrollbar-width:none; -ms-overflow-style:none; }
 
       .app{ width:min(980px,100%); }
 
-      /* ===== グラデーション枠の曇りガラスフレーム ===== */
+      /* すりガラスのフレーム */
       .frame{
         position:relative;
         border-radius:var(--radius);
         padding:clamp(20px,4vw,36px);
-        background:var(--glass);
-        backdrop-filter:blur(18px);
+        background:var(--glass);           /* 半透明 */
+        backdrop-filter:blur(22px) saturate(120%); /* ぼかし強めで“すりガラス” */
+        -webkit-backdrop-filter:blur(22px) saturate(120%);
         box-shadow:var(--shadow);
         overflow:hidden;
       }
-      /* 外周のグラデーション縁取り（擬似要素） */
+      /* 外周のグラデ縁取り */
       .frame::before{
         content:"";
-        position:absolute; inset:0;
-        border-radius:inherit;
-        padding:2px;                       /* 枠の太さ */
+        position:absolute; inset:0; border-radius:inherit;
+        padding:2px;
         background:linear-gradient(135deg,#ff7792 0%, #ffa76a 35%, #b777ff 75%, #6ed3ff 100%);
-        -webkit-mask:
-          linear-gradient(#000 0 0) content-box,
-          linear-gradient(#000 0 0);
-        -webkit-mask-composite:xor;
-                mask-composite:exclude;     /* 中身を抜く */
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite:xor; mask-composite:exclude;
         pointer-events:none;
       }
 
-      .intro{
-        display:grid;
-        gap:clamp(16px,3vw,22px);
-        text-align:center;
-      }
-      .logo{
-        width:min(220px,50vw);
-        aspect-ratio:4/1;
-        object-fit:contain;
+      /* イントロ内要素は“読みやすさ重視”で個別に最適化 */
+      .intro{ display:grid; gap:clamp(16px,3vw,22px); text-align:center; }
+
+      /* ロゴの後ろに薄いグラスパネルを敷いて読ませる */
+      .logo-wrap{
         justify-self:center;
-        filter:drop-shadow(0 6px 18px rgba(0,0,0,.35));
+        padding:8px 14px;
+        border-radius:14px;
+        background:rgba(0,0,0,.18);           /* 読みやすさ確保用の薄い下敷き */
+        backdrop-filter:blur(6px);
+        -webkit-backdrop-filter:blur(6px);
+        box-shadow:0 8px 20px rgba(0,0,0,.25);
       }
+      .logo{ width:min(240px,56vw); aspect-ratio:4/1; object-fit:contain; display:block; }
+
       .title{
-        margin:0;
-        font-size:clamp(34px,7vw,48px);
-        letter-spacing:.06em;
+        margin:0; font-size:clamp(34px,7vw,48px); letter-spacing:.06em; color:#fff;
+        text-shadow:0 2px 10px rgba(0,0,0,.45), 0 0 1px rgba(255,255,255,.15);
       }
       .caption{
-        margin:0;
-        color:var(--muted);
-        font-size:clamp(14px,2.8vw,18px);
-        letter-spacing:.04em;
+        margin:0; color:var(--muted); font-size:clamp(14px,2.8vw,18px); letter-spacing:.04em;
+        text-shadow:0 1px 6px rgba(0,0,0,.35);
       }
 
       .primary-button{
-        justify-self:center;
-        padding:14px 36px;
-        border:none;
-        border-radius:999px;
+        justify-self:center; padding:14px 36px; border:none; border-radius:999px;
         background:linear-gradient(120deg, rgba(255,109,122,.95), rgba(255,178,102,.92));
-        color:#1a0b20;
-        font-size:1rem;
-        font-weight:700;
-        letter-spacing:.06em;
-        cursor:pointer;
+        color:#1a0b20; font-size:1rem; font-weight:700; letter-spacing:.06em; cursor:pointer;
         transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+        box-shadow:0 10px 26px rgba(0,0,0,.28), 0 12px 28px rgba(255,109,122,.22);
       }
-      .primary-button:hover,
-      .primary-button:focus-visible{
+      .primary-button:hover, .primary-button:focus-visible{
         transform:translateY(-2px);
-        box-shadow:0 16px 30px rgba(255,109,122,.45);
+        box-shadow:0 16px 30px rgba(255,109,122,.45), 0 12px 26px rgba(0,0,0,.25);
       }
 
-      /* ===== アプリ本体 ===== */
+      /* ==== 以下、既存UI ==== */
       .app-shell{ display:none; }
       .app-shell[data-active="true"]{ display:grid; gap:16px; }
-
       header{ display:grid; gap:8px; }
-      header h1{
-        margin:0;
-        font-size:clamp(22px,5vw,28px);
-        letter-spacing:.08em;
-      }
-      .header-subtitle{
-        margin:0;
-        color:var(--muted);
-        font-size:.95rem;
-      }
+      header h1{ margin:0; font-size:clamp(22px,5vw,28px); letter-spacing:.08em; }
+      .header-subtitle{ margin:0; color:var(--muted); font-size:.95rem; }
       main{ display:grid; gap:18px; }
 
-      .progress{
-        display:flex; gap:12px; align-items:center;
-        padding:6px 0;
-      }
-      .progress-bar{
-        height:6px; border-radius:999px; background:rgba(255,255,255,.12);
-        flex:1; overflow:hidden;
-      }
-      .progress-bar span{
-        display:block; height:100%; width:0%;
-        background:linear-gradient(90deg, var(--accent), #ff8c68);
-        transition:width .2s ease;
-      }
+      .progress{ display:flex; gap:12px; align-items:center; padding:6px 0; }
+      .progress-bar{ height:6px; border-radius:999px; background:rgba(255,255,255,.12); flex:1; overflow:hidden; }
+      .progress-bar span{ display:block; height:100%; width:0%; background:linear-gradient(90deg, var(--accent), #ff8c68); transition:width .2s ease; }
 
-      .question-card, .result-card{
-        background:var(--card);
-        border-radius:18px;
-        padding:clamp(16px,3vw,24px);
-        display:grid; gap:16px;
-      }
-      .question-meta{
-        display:flex; justify-content:space-between; align-items:center;
-        color:var(--muted); font-size:.9rem;
-      }
+      .question-card, .result-card{ background:var(--card); border-radius:18px; padding:clamp(16px,3vw,24px); display:grid; gap:16px; }
+      .question-meta{ display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:.9rem; }
       .question-title{ font-size:clamp(18px,4vw,24px); margin:0; }
       .choices{ display:grid; gap:12px; }
-      .choice{
-        display:flex; justify-content:space-between; align-items:center; gap:12px;
-        padding:14px 18px; border-radius:14px; border:1px solid transparent;
-        background:rgba(255,255,255,.06); cursor:pointer;
-        transition:border-color .18s ease, transform .18s ease, background .18s ease, opacity .18s ease;
-      }
+      .choice{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 18px; border-radius:14px; border:1px solid transparent; background:rgba(255,255,255,.06); cursor:pointer; transition:border-color .18s, transform .18s, background .18s, opacity .18s; }
       .choice:hover, .choice:focus-visible{ border-color:rgba(244,93,72,.7); transform:translateY(-1px); }
       .choice[data-selected="true"]{ border-color:var(--accent); background:rgba(244,93,72,.18); }
       .choice-label{ display:grid; gap:2px; text-align:left; }
-      .choice-label strong{ font-weight:700; }
       .choice-label span{ color:var(--muted); font-size:.9rem; }
 
       .result-card{ display:none; }
@@ -176,18 +120,17 @@
       .result-title{ margin:0; font-size:clamp(22px,5vw,28px); }
       .result-summary{ color:var(--muted); line-height:1.6; white-space:pre-wrap; }
 
-      @media (max-width:600px){
-        .choice{ flex-direction:column; align-items:flex-start; }
-      }
+      @media (max-width:600px){ .choice{ flex-direction:column; align-items:flex-start; } }
     </style>
   </head>
   <body>
     <div class="app">
-      <!-- フレームの中にロゴ・タイトル・ボタン・アプリ本体を配置 -->
       <div class="frame">
         <!-- イントロ -->
         <section class="intro" data-active="true" id="intro">
-          <img class="logo" src="./pairin_logo.png" alt="Pairin ロゴ" />
+          <div class="logo-wrap">
+            <img class="logo" src="./pairin_logo.png" alt="Pairin ロゴ" />
+          </div>
           <h1 class="title">Pairin</h1>
           <p class="caption">あなたとワインをマッチング</p>
           <button type="button" id="start-button" class="primary-button">はじめる</button>
@@ -228,80 +171,41 @@
     </div>
 
     <script>
-      /* ====== ズーム抑止の追加保険（iOS Safari 等） ====== */
-      // ピンチズームの開始を抑止
-      document.addEventListener("gesturestart", function(e){ e.preventDefault(); }, {passive:false});
-      // ダブルタップズーム抑止
-      (function(){
-        let lastTouchEnd = 0;
-        document.addEventListener("touchend", function(e){
-          const now = Date.now();
-          if (now - lastTouchEnd <= 350) { e.preventDefault(); }
-          lastTouchEnd = now;
-        }, {passive:false});
-      })();
+      /* ズーム抑止の保険（iOS Safari 等） */
+      document.addEventListener("gesturestart", e => e.preventDefault(), {passive:false});
+      (function(){ let last=0; document.addEventListener("touchend", e=>{ const now=Date.now(); if(now-last<=350){ e.preventDefault(); } last=now; }, {passive:false}); })();
 
       const questions = [
         { id:"scene", category:"シチュエーション", title:"今夜はどんなシーンですか？",
-          options:[
-            { value:"relax", title:"ゆったり自宅で", description:"リラックスタイムに寄り添うワイン" },
-            { value:"celebrate", title:"お祝いディナー", description:"特別感を演出する１本" }
-          ]
-        },
+          options:[ {value:"relax", title:"ゆったり自宅で", description:"リラックスタイムに寄り添うワイン"},
+                    {value:"celebrate", title:"お祝いディナー", description:"特別感を演出する１本"} ] },
         { id:"taste", category:"テイスト", title:"味わいはどちらが好み？",
-          options:[
-            { value:"light", title:"軽やか", description:"フレッシュで飲みやすいスタイル" },
-            { value:"rich", title:"濃厚", description:"しっかりとした味わいを堪能" }
-          ]
-        },
+          options:[ {value:"light", title:"軽やか", description:"フレッシュで飲みやすいスタイル"},
+                    {value:"rich",  title:"濃厚",  description:"しっかりとした味わいを堪能"} ] },
         { id:"color", category:"カラー", title:"色はどちらに惹かれますか？",
-          options:[
-            { value:"white", title:"白ワイン", description:"爽やかな酸味と香り" },
-            { value:"red", title:"赤ワイン", description:"芳醇なコクと余韻" }
-          ]
-        },
+          options:[ {value:"white", title:"白ワイン", description:"爽やかな酸味と香り"},
+                    {value:"red",   title:"赤ワイン", description:"芳醇なコクと余韻"} ] },
         { id:"sweetness", category:"甘さ", title:"甘口と辛口、どちら派？",
-          options:[
-            { value:"dry", title:"辛口", description:"キリっと引き締まった味わい" },
-            { value:"sweet", title:"甘口", description:"デザートとも相性◎" }
-          ]
-        },
+          options:[ {value:"dry",   title:"辛口", description:"キリっと引き締まった味わい"},
+                    {value:"sweet", title:"甘口", description:"デザートとも相性◎"} ] },
         { id:"food", category:"ペアリング", title:"合わせたい料理は？",
-          options:[
-            { value:"seafood", title:"魚介", description:"白身魚やシーフードに" },
-            { value:"meat", title:"肉料理", description:"赤身やグリルにぴったり" }
-          ]
-        },
+          options:[ {value:"seafood", title:"魚介", description:"白身魚やシーフードに"},
+                    {value:"meat",    title:"肉料理", description:"赤身やグリルにぴったり"} ] },
         { id:"budget", category:"ご予算", title:"予算のイメージを教えてください",
-          options:[
-            { value:"casual", title:"カジュアル (〜3,000円)", description:"気軽に楽しむデイリーワイン" },
-            { value:"premium", title:"プレミアム (5,000円〜)", description:"特別な日の１本" }
-          ]
-        },
+          options:[ {value:"casual",  title:"カジュアル (〜3,000円)", description:"気軽に楽しむデイリーワイン"},
+                    {value:"premium", title:"プレミアム (5,000円〜)", description:"特別な日の１本"} ] },
         { id:"origin", category:"生産国", title:"生産国の好みはありますか？",
-          options:[
-            { value:"old-world", title:"旧世界", description:"フランスやイタリアなど" },
-            { value:"new-world", title:"新世界", description:"カリフォルニアやチリなど" }
-          ]
-        },
+          options:[ {value:"old-world", title:"旧世界", description:"フランスやイタリアなど"},
+                    {value:"new-world", title:"新世界", description:"カリフォルニアやチリなど"} ] },
         { id:"sparkling", category:"スパークリング", title:"泡のあるワインは？",
-          options:[
-            { value:"still", title:"スティルワイン", description:"落ち着いて味わいたい" },
-            { value:"sparkling", title:"スパークリング", description:"乾杯に華やかさを" }
-          ]
-        },
+          options:[ {value:"still",      title:"スティルワイン", description:"落ち着いて味わいたい"},
+                    {value:"sparkling",  title:"スパークリング", description:"乾杯に華やかさを"} ] },
         { id:"body", category:"ボディ", title:"ボディ感はどうですか？",
-          options:[
-            { value:"medium", title:"ミディアム", description:"バランスのとれた飲みごたえ" },
-            { value:"full", title:"フルボディ", description:"力強い深みを楽しむ" }
-          ]
-        },
+          options:[ {value:"medium", title:"ミディアム", description:"バランスのとれた飲みごたえ"},
+                    {value:"full",   title:"フルボディ", description:"力強い深みを楽しむ"} ] },
         { id:"mood", category:"ムード", title:"今日はどんな気分？",
-          options:[
-            { value:"adventure", title:"冒険したい", description:"未知のスタイルに挑戦" },
-            { value:"familiar", title:"定番で安心", description:"いつもの好みでリラックス" }
-          ]
-        }
+          options:[ {value:"adventure", title:"冒険したい", description:"未知のスタイルに挑戦"},
+                    {value:"familiar",  title:"定番で安心", description:"いつもの好みでリラックス"} ] }
       ];
 
       const state = { index:0, answers:new Map() };
@@ -400,7 +304,7 @@
         progressCount.textContent = `0 / ${questions.length}`;
         renderQuestion(state.index);
       }
-      restartButton.addEventListener("click", restart);
+      document.getElementById("restart-button").addEventListener("click", restart);
     </script>
   </body>
 </html>
