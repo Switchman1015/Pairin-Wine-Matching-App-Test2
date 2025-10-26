@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+codex/create-index.html-for-wine-suggestion-app-edoqt7
     <title>Pairin | ペアリン - Wine Matching</title>
     <style>
       :root {
@@ -25,6 +26,7 @@
       body {
         margin: 0;
         min-height: 100vh;
+codex/create-index.html-for-wine-suggestion-app-edoqt7
         background: var(--bg);
         color: var(--fg);
         display: flex;
@@ -108,6 +110,7 @@
 
       header h1 {
         margin: 0;
+codex/create-index.html-for-wine-suggestion-app-edoqt7
         font-size: clamp(26px, 4vw, 38px);
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -266,6 +269,7 @@
     </style>
   </head>
   <body>
+codex/create-index.html-for-wine-suggestion-app-edoqt7
     <div class="app">
       <section class="intro-screen" data-active="true">
         <h1 class="intro-title">Pairin <span class="phonetic">ペアリン</span></h1>
@@ -304,6 +308,7 @@
         </p>
         <button type="button" id="restart-button" class="choice">最初からやり直す</button>
       </article>
+codex/create-index.html-for-wine-suggestion-app-edoqt7
         </main>
       </div>
     </div>
@@ -407,6 +412,7 @@
         answers: new Map()
       };
 
+codex/create-index.html-for-wine-suggestion-app-edoqt7
       const introScreen = document.querySelector('.intro-screen');
       const appShell = document.querySelector('.app-shell');
       const startButton = document.getElementById('start-button');
@@ -421,6 +427,7 @@
       const questionStep = document.getElementById('question-step');
       const restartButton = document.getElementById('restart-button');
 
+codex/create-index.html-for-wine-suggestion-app-edoqt7
       startButton.addEventListener('click', startExperience);
 
       function renderQuestion(index) {
@@ -465,6 +472,7 @@
         renderQuestion(state.index);
       }
 
+codex/create-index.html-for-wine-suggestion-app-edoqt7
       function startExperience() {
         introScreen.dataset.active = 'false';
         appShell.dataset.active = 'true';
@@ -501,6 +509,8 @@
       }
 
       restartButton.addEventListener('click', restart);
+codex/create-index.html-for-wine-suggestion-app-edoqt7
+
     </script>
   </body>
 </html>
