@@ -3,14 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-codex/create-index.html-for-wine-suggestion-app-edoqt7
     <title>Pairin | ペアリン - Wine Matching</title>
     <style>
       :root {
         color-scheme: light dark;
         --bg: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1), transparent 45%),
-          radial-gradient(circle at 80% 0%, rgba(255, 119, 146, 0.25), transparent 55%),
-          linear-gradient(135deg, #12061f 0%, #3c103f 38%, #8a1f4d 70%, #f04e5c 100%);
+              radial-gradient(circle at 80% 0%, rgba(255, 119, 146, 0.25), transparent 55%),
+              linear-gradient(135deg, #12061f 0%, #3c103f 38%, #8a1f4d 70%, #f04e5c 100%);
         --fg: #fdf8f5;
         --accent: #ff6d7a;
         --muted: rgba(253, 248, 245, 0.72);
@@ -19,14 +18,11 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
         font-family: "Inter", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
 
       body {
         margin: 0;
         min-height: 100vh;
-codex/create-index.html-for-wine-suggestion-app-edoqt7
         background: var(--bg);
         color: var(--fg);
         display: flex;
@@ -51,10 +47,7 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
         box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
         text-align: center;
       }
-
-      .intro-screen[data-active="false"] {
-        display: none;
-      }
+      .intro-screen[data-active="false"] { display: none; }
 
       .intro-title {
         margin: 0;
@@ -82,7 +75,6 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
         cursor: pointer;
         transition: transform 180ms ease, box-shadow 180ms ease;
       }
-
       .primary-button:hover,
       .primary-button:focus-visible {
         transform: translateY(-2px);
@@ -97,20 +89,16 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
         box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
         overflow: hidden;
       }
-
       .app-shell[data-active="true"] {
         display: grid;
         gap: 8px;
         grid-template-rows: auto 1fr;
       }
 
-      header {
-        padding: clamp(24px, 5vw, 40px) clamp(20px, 5vw, 48px) 0;
-      }
+      header { padding: clamp(24px, 5vw, 40px) clamp(20px, 5vw, 48px) 0; }
 
       header h1 {
         margin: 0;
-codex/create-index.html-for-wine-suggestion-app-edoqt7
         font-size: clamp(26px, 4vw, 38px);
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -164,7 +152,6 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
         flex: 1;
         overflow: hidden;
       }
-
       .progress-bar span {
         display: block;
         height: 100%;
@@ -195,10 +182,7 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
         font-weight: 600;
       }
 
-      .choices {
-        display: grid;
-        gap: 16px;
-      }
+      .choices { display: grid; gap: 16px; }
 
       .choice {
         display: flex;
@@ -212,27 +196,18 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
         cursor: pointer;
         transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
       }
-
       .choice:hover,
       .choice:focus-visible {
         border-color: rgba(244, 93, 72, 0.7);
         transform: translateY(-1px);
       }
-
       .choice[data-selected="true"] {
         border-color: var(--accent);
         background: rgba(244, 93, 72, 0.18);
       }
 
-      .choice-label {
-        display: grid;
-        gap: 4px;
-      }
-
-      .choice-label strong {
-        font-weight: 600;
-      }
-
+      .choice-label { display: grid; gap: 4px; }
+      .choice-label strong { font-weight: 600; }
       .choice-label span {
         color: var(--muted);
         font-size: 0.9rem;
@@ -245,19 +220,16 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
         padding: clamp(24px, 4vw, 40px);
         gap: 20px;
       }
-
-      .result-card[data-active="true"] {
-        display: grid;
-      }
+      .result-card[data-active="true"] { display: grid; }
 
       .result-title {
         font-size: clamp(24px, 5vw, 32px);
         margin: 0;
       }
-
       .result-summary {
         color: var(--muted);
         line-height: 1.6;
+        white-space: pre-wrap; /* 改行をそのまま表示 */
       }
 
       @media (max-width: 600px) {
@@ -269,7 +241,6 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
     </style>
   </head>
   <body>
-codex/create-index.html-for-wine-suggestion-app-edoqt7
     <div class="app">
       <section class="intro-screen" data-active="true">
         <h1 class="intro-title">Pairin <span class="phonetic">ペアリン</span></h1>
@@ -287,28 +258,27 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
           </p>
         </header>
         <main>
-      <section class="progress" aria-live="polite">
-        <span id="progress-count">0 / 10</span>
-        <div class="progress-bar"><span id="progress-fill"></span></div>
-      </section>
+          <section class="progress" aria-live="polite">
+            <span id="progress-count">0 / 10</span>
+            <div class="progress-bar"><span id="progress-fill"></span></div>
+          </section>
 
-      <article class="question-card" data-question-index="0">
-        <div class="question-meta">
-          <span id="question-category">シチュエーション</span>
-          <span id="question-step">Q1</span>
-        </div>
-        <h2 class="question-title" id="question-title">今夜はどんなシーンですか？</h2>
-        <div class="choices" role="listbox" aria-labelledby="question-title"></div>
-      </article>
+          <article class="question-card" data-question-index="0">
+            <div class="question-meta">
+              <span id="question-category">シチュエーション</span>
+              <span id="question-step">Q1</span>
+            </div>
+            <h2 class="question-title" id="question-title">今夜はどんなシーンですか？</h2>
+            <div class="choices" role="listbox" aria-labelledby="question-title"></div>
+          </article>
 
-      <article class="result-card" id="result-card" aria-live="polite" aria-hidden="true">
-        <h2 class="result-title">あなたにおすすめのワイン</h2>
-        <p class="result-summary" id="result-summary">
-          回答に応じたおすすめがここに表示されます。レコメンドのロジックやデータソースを接続して仕上げてください。
-        </p>
-        <button type="button" id="restart-button" class="choice">最初からやり直す</button>
-      </article>
-codex/create-index.html-for-wine-suggestion-app-edoqt7
+          <article class="result-card" id="result-card" aria-live="polite" aria-hidden="true">
+            <h2 class="result-title">あなたにおすすめのワイン</h2>
+            <p class="result-summary" id="result-summary">
+              回答に応じたおすすめがここに表示されます。レコメンドのロジックやデータソースを接続して仕上げてください。
+            </p>
+            <button type="button" id="restart-button" class="choice">最初からやり直す</button>
+          </article>
         </main>
       </div>
     </div>
@@ -407,12 +377,8 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
         }
       ];
 
-      const state = {
-        index: 0,
-        answers: new Map()
-      };
+      const state = { index: 0, answers: new Map() };
 
-codex/create-index.html-for-wine-suggestion-app-edoqt7
       const introScreen = document.querySelector('.intro-screen');
       const appShell = document.querySelector('.app-shell');
       const startButton = document.getElementById('start-button');
@@ -427,22 +393,18 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
       const questionStep = document.getElementById('question-step');
       const restartButton = document.getElementById('restart-button');
 
-codex/create-index.html-for-wine-suggestion-app-edoqt7
       startButton.addEventListener('click', startExperience);
 
       function renderQuestion(index) {
         const question = questions[index];
-        if (!question) {
-          showResult();
-          return;
-        }
+        if (!question) { showResult(); return; }
 
         questionCard.dataset.questionIndex = index;
         questionCategory.textContent = question.category;
         questionTitle.textContent = question.title;
         questionStep.textContent = `Q${index + 1}`;
         progressCount.textContent = `${index + 1} / ${questions.length}`;
-        progressFill.style.width = `${((index) / questions.length) * 100}%`;
+        progressFill.style.width = `${(index / questions.length) * 100}%`;
         choicesContainer.innerHTML = '';
 
         question.options.forEach((option) => {
@@ -452,7 +414,7 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
           choice.dataset.value = option.value;
           choice.dataset.selected = state.answers.get(question.id) === option.value;
           choice.setAttribute('role', 'option');
-          choice.setAttribute('aria-pressed', choice.dataset.selected === 'true');
+          choice.setAttribute('aria-pressed', String(choice.dataset.selected === 'true'));
           choice.innerHTML = `
             <span class="choice-label">
               <strong>${option.title}</strong>
@@ -472,7 +434,6 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
         renderQuestion(state.index);
       }
 
-codex/create-index.html-for-wine-suggestion-app-edoqt7
       function startExperience() {
         introScreen.dataset.active = 'false';
         appShell.dataset.active = 'true';
@@ -482,6 +443,7 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
         resultCard.dataset.active = 'false';
         resultCard.setAttribute('aria-hidden', 'true');
         progressFill.style.width = '0%';
+        progressCount.textContent = `0 / ${questions.length}`;
         renderQuestion(state.index);
       }
 
@@ -505,12 +467,12 @@ codex/create-index.html-for-wine-suggestion-app-edoqt7
         questionCard.style.display = '';
         resultCard.dataset.active = 'false';
         resultCard.setAttribute('aria-hidden', 'true');
+        progressFill.style.width = '0%';
+        progressCount.textContent = `0 / ${questions.length}`;
         renderQuestion(state.index);
       }
 
       restartButton.addEventListener('click', restart);
-codex/create-index.html-for-wine-suggestion-app-edoqt7
-
     </script>
   </body>
 </html>
