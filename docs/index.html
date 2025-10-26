@@ -2,7 +2,7 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <!-- ズーム禁止 -->
+    <!-- スマホでのズーム無効 -->
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
     <title>Pairin - Wine Matching</title>
     <style>
@@ -12,21 +12,24 @@
         --muted:rgba(253,248,245,.86);
         --accent:#ff6d7a;
         --card:rgba(255,255,255,.06);
-        --glass:rgba(16,10,22,.28);
+        --glass:rgba(16,10,22,.28);  /* すりガラスのベース色（半透明） */
         --radius:28px;
         --shadow:0 24px 80px rgba(0,0,0,.35);
-        --pad-h: clamp(20px, 6vw, 80px);   /* 画面左右マージン */
-        --pad-v: clamp(24px, 8vh, 120px);  /* 画面上下マージン（しっかり余白） */
+
+        /* 画面端マージン（PC広め, モバイルは下の@mediaで再調整） */
+        --pad-h: clamp(20px, 6vw, 80px);
+        --pad-v: clamp(24px, 8vh, 120px);
+
         font-family:"Inter","Noto Sans JP",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       }
 
-      /* スクロール/ズーム無効 & スクロールバー非表示 */
+      /* 全体: 画面スクロール禁止・ズーム抑止・スクロールバー非表示 */
       html, body{
         height:100%;
-        overflow:hidden;
+        overflow:hidden;                 /* 画面全体のスクロール禁止 */
         margin:0;
         -webkit-text-size-adjust:100%;
-        touch-action:manipulation;
+        touch-action:manipulation;       /* ダブルタップズーム抑止 */
         color:var(--fg);
         background:#000;
       }
@@ -34,51 +37,79 @@
       *::-webkit-scrollbar{ display:none; }
       *{ scrollbar-width:none; -ms-overflow-style:none; }
 
-      /* 背景：写真を“普通に”全面表示（暗くしない/薄くしない） */
+      /* 背景：写真をそのまま全面表示（暗くしない） */
       body{
         background: url("./pairin_title_bg.jpg") center center / cover no-repeat fixed;
-        display:flex; align-items:center; justify-content:center;
+        display:flex;
+        align-items:center;
+        justify-content:center;
         padding: var(--pad-v) var(--pad-h);
       }
 
-      .app{ width:100%; height:100%; display:grid; place-items:center; }
+      .app{
+        width:100%;
+        height:100%;
+        display:grid;
+        place-items:center;
+      }
 
-      /* すりガラスのボックス：サイズを抑え、中央寄せ */
+      /* ===== すりガラスのフレーム（中央・見切れ防止） ===== */
       .frame{
         position:relative;
-        width: min(1000px, 88vw);          /* 画面端にしっかり余白を確保 */
-        min-height: min(760px, 84vh);      /* 画面を占有しすぎない高さ */
+        width: min(980px, 88vw);
+        /* 中身が増えたらフレーム内のみスクロールさせる */
+        overflow:auto;
+
+        /* 高さはURLバー/ホームバーを考慮しつつ過大化防止 */
+        max-height: calc(
+          100svh - var(--pad-v) * 2
+          - env(safe-area-inset-top, 0px)
+          - env(safe-area-inset-bottom, 0px)
+        );
+
         border-radius: var(--radius);
-        padding: clamp(24px, 4vw, 40px);
+        padding: clamp(20px, 4vw, 36px);
         background: var(--glass);
-        backdrop-filter: blur(12px) saturate(120%);
+        backdrop-filter: blur(12px) saturate(120%);     /* ぼかしを弱め */
         -webkit-backdrop-filter: blur(12px) saturate(120%);
         box-shadow: var(--shadow);
         display:grid;
-        place-items:center;                /* ボックス内の要素を中央に */
-        gap: clamp(16px, 2.5vw, 24px);
-        overflow:hidden;
+        place-items:center;     /* ボックス内を中央配置 */
+        gap: clamp(12px, 2.5vw, 24px);
       }
+      /* svh 非対応ブラウザ用フォールバック */
+      @supports not (height: 100svh){
+        .frame{
+          max-height: calc(
+            100vh - var(--pad-v) * 2
+            - env(safe-area-inset-top, 0px)
+            - env(safe-area-inset-bottom, 0px)
+          );
+        }
+      }
+
       /* 控えめなグラデ縁取り */
       .frame::before{
         content:"";
-        position:absolute; inset:0;
+        position:absolute;
+        inset:0;
         border-radius:inherit;
         padding:2px;
         background:linear-gradient(135deg,#ff7792 0%, #ffa76a 35%, #b777ff 75%, #6ed3ff 100%);
         opacity:.75;
         -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-        -webkit-mask-composite:xor; mask-composite:exclude;
+        -webkit-mask-composite:xor;
+                mask-composite:exclude;
         pointer-events:none;
       }
 
-      /* イントロ：中央配置 */
+      /* イントロ（中央） */
       .intro{
         display:grid;
         gap:clamp(16px,3vw,22px);
         text-align:center;
         width:100%;
-        max-width:760px;                   /* 行幅を制御して読みやすく */
+        max-width:760px;  /* 可読幅 */
       }
       .logo{
         width:min(260px,56vw);
@@ -123,9 +154,17 @@
         box-shadow:0 16px 30px rgba(255,109,122,.45), 0 12px 26px rgba(0,0,0,.25);
       }
 
-      /* ===== アプリ本体（開始後）も中央寄せ ===== */
-      .app-shell{ display:none; width:100%; max-width:760px; }
-      .app-shell[data-active="true"]{ display:grid; gap:16px; justify-self:center; }
+      /* ===== 開始後の本体（中央寄せ＆フレーム内スクロール対応） ===== */
+      .app-shell{
+        display:none;
+        width:100%;
+        max-width:760px;
+      }
+      .app-shell[data-active="true"]{
+        display:grid;
+        gap:16px;
+        justify-self:center;
+      }
 
       header{ display:grid; gap:8px; text-align:center; }
       header h1{ margin:0; font-size:clamp(22px,5vw,28px); letter-spacing:.08em; }
@@ -157,16 +196,41 @@
       .result-title{ margin:0; font-size:clamp(22px,5vw,28px); }
       .result-summary{ color:var(--muted); line-height:1.6; white-space:pre-wrap; }
 
-      @media (max-width:600px){
-        .frame{ min-height: min(680px, 86vh); } /* モバイルでの高さ微調整 */
-        .choice{ flex-direction:column; align-items:flex-start; }
+      /* ===== モバイル最適化（さらに見切れ防止を強化） ===== */
+      @media (max-width: 600px){
+        body{
+          /* 端の余白を少し広げてフレーム見切れ防止 */
+          padding: clamp(16px, 4vh, 28px) clamp(16px, 6vw, 28px);
+        }
+        .frame{
+          width: min(640px, 92vw);         /* 横幅をさらに抑える */
+          border-radius: 20px;
+          padding: clamp(16px, 5vw, 28px);
+          max-height: calc(
+            100svh - 2 * clamp(16px, 4vh, 28px)
+            - env(safe-area-inset-top, 0px)
+            - env(safe-area-inset-bottom, 0px)
+          );
+        }
+      }
+      /* svh 非対応端末のモバイル用フォールバック */
+      @supports not (height: 100svh){
+        @media (max-width: 600px){
+          .frame{
+            max-height: calc(
+              100vh - 2 * clamp(16px, 4vh, 28px)
+              - env(safe-area-inset-top, 0px)
+              - env(safe-area-inset-bottom, 0px)
+            );
+          }
+        }
       }
     </style>
   </head>
   <body>
     <div class="app">
       <div class="frame">
-        <!-- イントロ：中央 -->
+        <!-- イントロ（中央） -->
         <section class="intro" data-active="true" id="intro">
           <img class="logo" src="./pairin_logo.png" alt="Pairin ロゴ" />
           <h1 class="title">Pairin</h1>
@@ -174,7 +238,7 @@
           <button type="button" id="start-button" class="primary-button">はじめる</button>
         </section>
 
-        <!-- 開始後の本体も中央寄せで表示 -->
+        <!-- 質問画面（中央・必要時のみフレーム内スクロール） -->
         <div class="app-shell" data-active="false" id="app-shell" aria-hidden="true">
           <header>
             <h1>Pairin</h1>
@@ -209,8 +273,16 @@
     <script>
       /* ズーム抑止（iOS保険） */
       document.addEventListener("gesturestart", e=>e.preventDefault(), {passive:false});
-      (function(){let last=0;document.addEventListener("touchend",e=>{const now=Date.now();if(now-last<=350){e.preventDefault();}last=now;},{passive:false});})();
+      (function(){
+        let last=0;
+        document.addEventListener("touchend",e=>{
+          const now=Date.now();
+          if(now-last<=350){ e.preventDefault(); }
+          last=now;
+        }, {passive:false});
+      })();
 
+      /* 設問データ */
       const questions=[
         {id:"scene",category:"シチュエーション",title:"今夜はどんなシーンですか？",
          options:[{value:"relax",title:"ゆったり自宅で",description:"リラックスタイムに寄り添うワイン"},
@@ -244,6 +316,7 @@
                   {value:"familiar", title:"定番で安心",description:"いつもの好みでリラックス"}]}
       ];
 
+      /* UI 参照 */
       const state={index:0,answers:new Map()};
       const intro=document.getElementById("intro");
       const appShell=document.getElementById("app-shell");
