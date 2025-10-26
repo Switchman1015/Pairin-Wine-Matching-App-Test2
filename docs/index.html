@@ -2,477 +2,405 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Pairin | ペアリン - Wine Matching</title>
+    <!-- 拡大縮小を禁止（ダブルタップ/ピンチズーム抑止） -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <title>Pairin - Wine Matching</title>
     <style>
-      :root {
+      :root{
         color-scheme: light dark;
-        --bg: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1), transparent 45%),
-              radial-gradient(circle at 80% 0%, rgba(255, 119, 146, 0.25), transparent 55%),
-              linear-gradient(135deg, #12061f 0%, #3c103f 38%, #8a1f4d 70%, #f04e5c 100%);
-        --fg: #fdf8f5;
-        --accent: #ff6d7a;
-        --muted: rgba(253, 248, 245, 0.72);
-        --card: rgba(255, 255, 255, 0.08);
-        --surface: rgba(12, 6, 24, 0.5);
-        font-family: "Inter", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --fg:#fdf8f5;
+        --muted:rgba(253,248,245,.78);
+        --accent:#ff6d7a;
+        --card:rgba(255,255,255,.06);
+        --glass:rgba(16,10,22,.55);    /* フレーム内の曇りガラス色 */
+        --radius:28px;
+        --shadow:0 24px 80px rgba(0,0,0,.35);
+        font-family:"Inter","Noto Sans JP",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       }
 
-      * { box-sizing: border-box; }
+      /* === ページ全体のスクロール/ズーム無効 & スクロールバー非表示 === */
+      html, body{
+        height:100%;
+        overflow:hidden;                 /* スクロール禁止 */
+        margin:0;
+        -webkit-text-size-adjust:100%;
+        touch-action:manipulation;       /* ダブルタップズーム無効（タップ操作は可） */
+        background:#000;
+      }
+      /* 背景画像 */
+      body{
+        color:var(--fg);
+        background:
+          linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55)),
+          url("./pairin_title_bg.jpg") center center / cover no-repeat fixed;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:clamp(16px,4vw,32px);
+      }
+      /* スクロールバー非表示（念のため全ブラウザ系） */
+      *{ box-sizing:border-box; }
+      *::-webkit-scrollbar{ display:none; }
+      *{ scrollbar-width:none; -ms-overflow-style:none; }
 
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background: var(--bg);
-        color: var(--fg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: clamp(24px, 6vw, 48px);
+      .app{ width:min(980px,100%); }
+
+      /* ===== グラデーション枠の曇りガラスフレーム ===== */
+      .frame{
+        position:relative;
+        border-radius:var(--radius);
+        padding:clamp(20px,4vw,36px);
+        background:var(--glass);
+        backdrop-filter:blur(18px);
+        box-shadow:var(--shadow);
+        overflow:hidden;
+      }
+      /* 外周のグラデーション縁取り（擬似要素） */
+      .frame::before{
+        content:"";
+        position:absolute; inset:0;
+        border-radius:inherit;
+        padding:2px;                       /* 枠の太さ */
+        background:linear-gradient(135deg,#ff7792 0%, #ffa76a 35%, #b777ff 75%, #6ed3ff 100%);
+        -webkit-mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite:xor;
+                mask-composite:exclude;     /* 中身を抜く */
+        pointer-events:none;
       }
 
-      .app {
-        width: min(960px, 100%);
-        display: grid;
-        gap: clamp(32px, 6vw, 48px);
+      .intro{
+        display:grid;
+        gap:clamp(16px,3vw,22px);
+        text-align:center;
+      }
+      .logo{
+        width:min(220px,50vw);
+        aspect-ratio:4/1;
+        object-fit:contain;
+        justify-self:center;
+        filter:drop-shadow(0 6px 18px rgba(0,0,0,.35));
+      }
+      .title{
+        margin:0;
+        font-size:clamp(34px,7vw,48px);
+        letter-spacing:.06em;
+      }
+      .caption{
+        margin:0;
+        color:var(--muted);
+        font-size:clamp(14px,2.8vw,18px);
+        letter-spacing:.04em;
       }
 
-      .intro-screen {
-        display: grid;
-        gap: 24px;
-        padding: clamp(32px, 8vw, 64px);
-        border-radius: 28px;
-        background: rgba(12, 6, 24, 0.55);
-        backdrop-filter: blur(18px);
-        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-        text-align: center;
-      }
-      .intro-screen[data-active="false"] { display: none; }
-
-      .intro-title {
-        margin: 0;
-        font-size: clamp(36px, 8vw, 52px);
-        letter-spacing: 0.05em;
-      }
-
-      .intro-subtitle {
-        margin: 0;
-        font-size: clamp(16px, 3vw, 20px);
-        color: var(--muted);
-        line-height: 1.6;
-      }
-
-      .primary-button {
-        justify-self: center;
-        padding: 14px 36px;
-        border: none;
-        border-radius: 999px;
-        background: linear-gradient(120deg, rgba(255, 109, 122, 0.95), rgba(255, 178, 102, 0.9));
-        color: #1a0b20;
-        font-size: 1rem;
-        font-weight: 600;
-        letter-spacing: 0.05em;
-        cursor: pointer;
-        transition: transform 180ms ease, box-shadow 180ms ease;
+      .primary-button{
+        justify-self:center;
+        padding:14px 36px;
+        border:none;
+        border-radius:999px;
+        background:linear-gradient(120deg, rgba(255,109,122,.95), rgba(255,178,102,.92));
+        color:#1a0b20;
+        font-size:1rem;
+        font-weight:700;
+        letter-spacing:.06em;
+        cursor:pointer;
+        transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
       }
       .primary-button:hover,
-      .primary-button:focus-visible {
-        transform: translateY(-2px);
-        box-shadow: 0 16px 30px rgba(255, 109, 122, 0.45);
+      .primary-button:focus-visible{
+        transform:translateY(-2px);
+        box-shadow:0 16px 30px rgba(255,109,122,.45);
       }
 
-      .app-shell {
-        display: none;
-        background: rgba(12, 6, 24, 0.38);
-        border-radius: 32px;
-        backdrop-filter: blur(22px);
-        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
-        overflow: hidden;
+      /* ===== アプリ本体 ===== */
+      .app-shell{ display:none; }
+      .app-shell[data-active="true"]{ display:grid; gap:16px; }
+
+      header{ display:grid; gap:8px; }
+      header h1{
+        margin:0;
+        font-size:clamp(22px,5vw,28px);
+        letter-spacing:.08em;
       }
-      .app-shell[data-active="true"] {
-        display: grid;
-        gap: 8px;
-        grid-template-rows: auto 1fr;
+      .header-subtitle{
+        margin:0;
+        color:var(--muted);
+        font-size:.95rem;
+      }
+      main{ display:grid; gap:18px; }
+
+      .progress{
+        display:flex; gap:12px; align-items:center;
+        padding:6px 0;
+      }
+      .progress-bar{
+        height:6px; border-radius:999px; background:rgba(255,255,255,.12);
+        flex:1; overflow:hidden;
+      }
+      .progress-bar span{
+        display:block; height:100%; width:0%;
+        background:linear-gradient(90deg, var(--accent), #ff8c68);
+        transition:width .2s ease;
       }
 
-      header { padding: clamp(24px, 5vw, 40px) clamp(20px, 5vw, 48px) 0; }
+      .question-card, .result-card{
+        background:var(--card);
+        border-radius:18px;
+        padding:clamp(16px,3vw,24px);
+        display:grid; gap:16px;
+      }
+      .question-meta{
+        display:flex; justify-content:space-between; align-items:center;
+        color:var(--muted); font-size:.9rem;
+      }
+      .question-title{ font-size:clamp(18px,4vw,24px); margin:0; }
+      .choices{ display:grid; gap:12px; }
+      .choice{
+        display:flex; justify-content:space-between; align-items:center; gap:12px;
+        padding:14px 18px; border-radius:14px; border:1px solid transparent;
+        background:rgba(255,255,255,.06); cursor:pointer;
+        transition:border-color .18s ease, transform .18s ease, background .18s ease, opacity .18s ease;
+      }
+      .choice:hover, .choice:focus-visible{ border-color:rgba(244,93,72,.7); transform:translateY(-1px); }
+      .choice[data-selected="true"]{ border-color:var(--accent); background:rgba(244,93,72,.18); }
+      .choice-label{ display:grid; gap:2px; text-align:left; }
+      .choice-label strong{ font-weight:700; }
+      .choice-label span{ color:var(--muted); font-size:.9rem; }
 
-      header h1 {
-        margin: 0;
-        font-size: clamp(26px, 4vw, 38px);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
+      .result-card{ display:none; }
+      .result-card[data-active="true"]{ display:grid; }
+      .result-title{ margin:0; font-size:clamp(22px,5vw,28px); }
+      .result-summary{ color:var(--muted); line-height:1.6; white-space:pre-wrap; }
 
-      .header-subtitle {
-        margin: 8px 0 0;
-        font-size: 0.95rem;
-        color: var(--muted);
-        letter-spacing: 0.04em;
-      }
-
-      .phonetic {
-        display: inline-block;
-        margin-left: 10px;
-        font-size: 0.85em;
-        color: rgba(253, 248, 245, 0.6);
-        letter-spacing: 0.12em;
-      }
-
-      header p {
-        margin: 12px 0 0;
-        max-width: 640px;
-        color: var(--muted);
-        font-size: 1rem;
-        line-height: 1.6;
-      }
-
-      main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 32px;
-        padding: 0 clamp(16px, 4vw, 48px) 48px;
-      }
-
-      .progress {
-        position: sticky;
-        top: 0;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 12px 0;
-        backdrop-filter: blur(10px);
-      }
-
-      .progress-bar {
-        height: 6px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.12);
-        flex: 1;
-        overflow: hidden;
-      }
-      .progress-bar span {
-        display: block;
-        height: 100%;
-        width: 0%;
-        background: linear-gradient(90deg, var(--accent), #ff8c68);
-        transition: width 200ms ease;
-      }
-
-      .question-card {
-        background: var(--card);
-        border-radius: 18px;
-        padding: clamp(20px, 3vw, 32px);
-        display: grid;
-        gap: 24px;
-        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.2);
-      }
-
-      .question-meta {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-
-      .question-title {
-        font-size: clamp(20px, 4vw, 26px);
-        font-weight: 600;
-      }
-
-      .choices { display: grid; gap: 16px; }
-
-      .choice {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: clamp(14px, 3vw, 18px) clamp(18px, 3vw, 22px);
-        border-radius: 16px;
-        border: 1px solid transparent;
-        background: rgba(255, 255, 255, 0.06);
-        cursor: pointer;
-        transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
-      }
-      .choice:hover,
-      .choice:focus-visible {
-        border-color: rgba(244, 93, 72, 0.7);
-        transform: translateY(-1px);
-      }
-      .choice[data-selected="true"] {
-        border-color: var(--accent);
-        background: rgba(244, 93, 72, 0.18);
-      }
-
-      .choice-label { display: grid; gap: 4px; }
-      .choice-label strong { font-weight: 600; }
-      .choice-label span {
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-
-      .result-card {
-        display: none;
-        background: var(--surface);
-        border-radius: 22px;
-        padding: clamp(24px, 4vw, 40px);
-        gap: 20px;
-      }
-      .result-card[data-active="true"] { display: grid; }
-
-      .result-title {
-        font-size: clamp(24px, 5vw, 32px);
-        margin: 0;
-      }
-      .result-summary {
-        color: var(--muted);
-        line-height: 1.6;
-        white-space: pre-wrap; /* 改行をそのまま表示 */
-      }
-
-      @media (max-width: 600px) {
-        .choice {
-          flex-direction: column;
-          align-items: flex-start;
-        }
+      @media (max-width:600px){
+        .choice{ flex-direction:column; align-items:flex-start; }
       }
     </style>
   </head>
   <body>
     <div class="app">
-      <section class="intro-screen" data-active="true">
-        <h1 class="intro-title">Pairin <span class="phonetic">ペアリン</span></h1>
-        <p class="intro-subtitle">10の２択に答えて、あなたに寄り添うワインと出会いましょう。</p>
-        <button type="button" id="start-button" class="primary-button">はじめる</button>
-      </section>
+      <!-- フレームの中にロゴ・タイトル・ボタン・アプリ本体を配置 -->
+      <div class="frame">
+        <!-- イントロ -->
+        <section class="intro" data-active="true" id="intro">
+          <img class="logo" src="./pairin_logo.png" alt="Pairin ロゴ" />
+          <h1 class="title">Pairin</h1>
+          <p class="caption">あなたとワインをマッチング</p>
+          <button type="button" id="start-button" class="primary-button">はじめる</button>
+        </section>
 
-      <div class="app-shell" data-active="false">
-        <header>
-          <h1>Pairin <span class="phonetic">ペアリン</span></h1>
-          <p class="header-subtitle">Your mood-matching wine concierge.</p>
-          <p>
-            １０の質問に答えるだけで、いまの気分やシーンにぴったりなワインをサジェストします。
-            後から質問や選択肢、デザインを自由に差し替えられるよう、構造化されたたたき台です。
-          </p>
-        </header>
-        <main>
-          <section class="progress" aria-live="polite">
-            <span id="progress-count">0 / 10</span>
-            <div class="progress-bar"><span id="progress-fill"></span></div>
-          </section>
+        <!-- アプリ本体 -->
+        <div class="app-shell" data-active="false" id="app-shell" aria-hidden="true">
+          <header>
+            <h1>Pairin</h1>
+            <p class="header-subtitle">あなたとワインをマッチング</p>
+          </header>
 
-          <article class="question-card" data-question-index="0">
-            <div class="question-meta">
-              <span id="question-category">シチュエーション</span>
-              <span id="question-step">Q1</span>
-            </div>
-            <h2 class="question-title" id="question-title">今夜はどんなシーンですか？</h2>
-            <div class="choices" role="listbox" aria-labelledby="question-title"></div>
-          </article>
+          <main>
+            <section class="progress" aria-live="polite">
+              <span id="progress-count">0 / 10</span>
+              <div class="progress-bar"><span id="progress-fill"></span></div>
+            </section>
 
-          <article class="result-card" id="result-card" aria-live="polite" aria-hidden="true">
-            <h2 class="result-title">あなたにおすすめのワイン</h2>
-            <p class="result-summary" id="result-summary">
-              回答に応じたおすすめがここに表示されます。レコメンドのロジックやデータソースを接続して仕上げてください。
-            </p>
-            <button type="button" id="restart-button" class="choice">最初からやり直す</button>
-          </article>
-        </main>
+            <article class="question-card" data-question-index="0" id="question-card">
+              <div class="question-meta">
+                <span id="question-category">シチュエーション</span>
+                <span id="question-step">Q1</span>
+              </div>
+              <h2 class="question-title" id="question-title">今夜はどんなシーンですか？</h2>
+              <div class="choices" role="listbox" aria-labelledby="question-title"></div>
+            </article>
+
+            <article class="result-card" id="result-card" aria-live="polite" aria-hidden="true">
+              <h2 class="result-title">あなたにおすすめのワイン</h2>
+              <p class="result-summary" id="result-summary">
+                回答に応じたおすすめがここに表示されます。レコメンドのロジックやデータソースを接続して仕上げてください。
+              </p>
+              <button type="button" id="restart-button" class="choice">最初からやり直す</button>
+            </article>
+          </main>
+        </div>
       </div>
     </div>
 
     <script>
+      /* ====== ズーム抑止の追加保険（iOS Safari 等） ====== */
+      // ピンチズームの開始を抑止
+      document.addEventListener("gesturestart", function(e){ e.preventDefault(); }, {passive:false});
+      // ダブルタップズーム抑止
+      (function(){
+        let lastTouchEnd = 0;
+        document.addEventListener("touchend", function(e){
+          const now = Date.now();
+          if (now - lastTouchEnd <= 350) { e.preventDefault(); }
+          lastTouchEnd = now;
+        }, {passive:false});
+      })();
+
       const questions = [
-        {
-          id: "scene",
-          category: "シチュエーション",
-          title: "今夜はどんなシーンですか？",
-          options: [
-            { value: "relax", title: "ゆったり自宅で", description: "リラックスタイムに寄り添うワイン" },
-            { value: "celebrate", title: "お祝いディナー", description: "特別感を演出する１本" }
+        { id:"scene", category:"シチュエーション", title:"今夜はどんなシーンですか？",
+          options:[
+            { value:"relax", title:"ゆったり自宅で", description:"リラックスタイムに寄り添うワイン" },
+            { value:"celebrate", title:"お祝いディナー", description:"特別感を演出する１本" }
           ]
         },
-        {
-          id: "taste",
-          category: "テイスト",
-          title: "味わいはどちらが好み？",
-          options: [
-            { value: "light", title: "軽やか", description: "フレッシュで飲みやすいスタイル" },
-            { value: "rich", title: "濃厚", description: "しっかりとした味わいを堪能" }
+        { id:"taste", category:"テイスト", title:"味わいはどちらが好み？",
+          options:[
+            { value:"light", title:"軽やか", description:"フレッシュで飲みやすいスタイル" },
+            { value:"rich", title:"濃厚", description:"しっかりとした味わいを堪能" }
           ]
         },
-        {
-          id: "color",
-          category: "カラー",
-          title: "色はどちらに惹かれますか？",
-          options: [
-            { value: "white", title: "白ワイン", description: "爽やかな酸味と香り" },
-            { value: "red", title: "赤ワイン", description: "芳醇なコクと余韻" }
+        { id:"color", category:"カラー", title:"色はどちらに惹かれますか？",
+          options:[
+            { value:"white", title:"白ワイン", description:"爽やかな酸味と香り" },
+            { value:"red", title:"赤ワイン", description:"芳醇なコクと余韻" }
           ]
         },
-        {
-          id: "sweetness",
-          category: "甘さ",
-          title: "甘口と辛口、どちら派？",
-          options: [
-            { value: "dry", title: "辛口", description: "キリっと引き締まった味わい" },
-            { value: "sweet", title: "甘口", description: "デザートとも相性◎" }
+        { id:"sweetness", category:"甘さ", title:"甘口と辛口、どちら派？",
+          options:[
+            { value:"dry", title:"辛口", description:"キリっと引き締まった味わい" },
+            { value:"sweet", title:"甘口", description:"デザートとも相性◎" }
           ]
         },
-        {
-          id: "food",
-          category: "ペアリング",
-          title: "合わせたい料理は？",
-          options: [
-            { value: "seafood", title: "魚介", description: "白身魚やシーフードに" },
-            { value: "meat", title: "肉料理", description: "赤身やグリルにぴったり" }
+        { id:"food", category:"ペアリング", title:"合わせたい料理は？",
+          options:[
+            { value:"seafood", title:"魚介", description:"白身魚やシーフードに" },
+            { value:"meat", title:"肉料理", description:"赤身やグリルにぴったり" }
           ]
         },
-        {
-          id: "budget",
-          category: "ご予算",
-          title: "予算のイメージを教えてください",
-          options: [
-            { value: "casual", title: "カジュアル (〜3,000円)", description: "気軽に楽しむデイリーワイン" },
-            { value: "premium", title: "プレミアム (5,000円〜)", description: "特別な日の１本" }
+        { id:"budget", category:"ご予算", title:"予算のイメージを教えてください",
+          options:[
+            { value:"casual", title:"カジュアル (〜3,000円)", description:"気軽に楽しむデイリーワイン" },
+            { value:"premium", title:"プレミアム (5,000円〜)", description:"特別な日の１本" }
           ]
         },
-        {
-          id: "origin",
-          category: "生産国",
-          title: "生産国の好みはありますか？",
-          options: [
-            { value: "old-world", title: "旧世界", description: "フランスやイタリアなど" },
-            { value: "new-world", title: "新世界", description: "カリフォルニアやチリなど" }
+        { id:"origin", category:"生産国", title:"生産国の好みはありますか？",
+          options:[
+            { value:"old-world", title:"旧世界", description:"フランスやイタリアなど" },
+            { value:"new-world", title:"新世界", description:"カリフォルニアやチリなど" }
           ]
         },
-        {
-          id: "sparkling",
-          category: "スパークリング",
-          title: "泡のあるワインは？",
-          options: [
-            { value: "still", title: "スティルワイン", description: "落ち着いて味わいたい" },
-            { value: "sparkling", title: "スパークリング", description: "乾杯に華やかさを" }
+        { id:"sparkling", category:"スパークリング", title:"泡のあるワインは？",
+          options:[
+            { value:"still", title:"スティルワイン", description:"落ち着いて味わいたい" },
+            { value:"sparkling", title:"スパークリング", description:"乾杯に華やかさを" }
           ]
         },
-        {
-          id: "body",
-          category: "ボディ",
-          title: "ボディ感はどうですか？",
-          options: [
-            { value: "medium", title: "ミディアム", description: "バランスのとれた飲みごたえ" },
-            { value: "full", title: "フルボディ", description: "力強い深みを楽しむ" }
+        { id:"body", category:"ボディ", title:"ボディ感はどうですか？",
+          options:[
+            { value:"medium", title:"ミディアム", description:"バランスのとれた飲みごたえ" },
+            { value:"full", title:"フルボディ", description:"力強い深みを楽しむ" }
           ]
         },
-        {
-          id: "mood",
-          category: "ムード",
-          title: "今日はどんな気分？",
-          options: [
-            { value: "adventure", title: "冒険したい", description: "未知のスタイルに挑戦" },
-            { value: "familiar", title: "定番で安心", description: "いつもの好みでリラックス" }
+        { id:"mood", category:"ムード", title:"今日はどんな気分？",
+          options:[
+            { value:"adventure", title:"冒険したい", description:"未知のスタイルに挑戦" },
+            { value:"familiar", title:"定番で安心", description:"いつもの好みでリラックス" }
           ]
         }
       ];
 
-      const state = { index: 0, answers: new Map() };
+      const state = { index:0, answers:new Map() };
 
-      const introScreen = document.querySelector('.intro-screen');
-      const appShell = document.querySelector('.app-shell');
-      const startButton = document.getElementById('start-button');
-      const choicesContainer = document.querySelector('.choices');
-      const questionCard = document.querySelector('.question-card');
-      const resultCard = document.getElementById('result-card');
-      const resultSummary = document.getElementById('result-summary');
-      const progressFill = document.getElementById('progress-fill');
-      const progressCount = document.getElementById('progress-count');
-      const questionTitle = document.getElementById('question-title');
-      const questionCategory = document.getElementById('question-category');
-      const questionStep = document.getElementById('question-step');
-      const restartButton = document.getElementById('restart-button');
+      const intro = document.getElementById("intro");
+      const appShell = document.getElementById("app-shell");
+      const startButton = document.getElementById("start-button");
+      const choicesContainer = document.querySelector(".choices");
+      const questionCard = document.getElementById("question-card");
+      const resultCard = document.getElementById("result-card");
+      const resultSummary = document.getElementById("result-summary");
+      const progressFill = document.getElementById("progress-fill");
+      const progressCount = document.getElementById("progress-count");
+      const questionTitle = document.getElementById("question-title");
+      const questionCategory = document.getElementById("question-category");
+      const questionStep = document.getElementById("question-step");
+      const restartButton = document.getElementById("restart-button");
 
-      startButton.addEventListener('click', startExperience);
+      startButton.addEventListener("click", startExperience);
 
-      function renderQuestion(index) {
-        const question = questions[index];
-        if (!question) { showResult(); return; }
+      function renderQuestion(index){
+        const q = questions[index];
+        if(!q){ showResult(); return; }
 
         questionCard.dataset.questionIndex = index;
-        questionCategory.textContent = question.category;
-        questionTitle.textContent = question.title;
-        questionStep.textContent = `Q${index + 1}`;
-        progressCount.textContent = `${index + 1} / ${questions.length}`;
+        questionCategory.textContent = q.category;
+        questionTitle.textContent = q.title;
+        questionStep.textContent = `Q${index+1}`;
+        progressCount.textContent = `${index+1} / ${questions.length}`;
         progressFill.style.width = `${(index / questions.length) * 100}%`;
-        choicesContainer.innerHTML = '';
 
-        question.options.forEach((option) => {
-          const choice = document.createElement('button');
-          choice.type = 'button';
-          choice.className = 'choice';
-          choice.dataset.value = option.value;
-          choice.dataset.selected = state.answers.get(question.id) === option.value;
-          choice.setAttribute('role', 'option');
-          choice.setAttribute('aria-pressed', String(choice.dataset.selected === 'true'));
-          choice.innerHTML = `
+        choicesContainer.innerHTML = "";
+        q.options.forEach(opt=>{
+          const btn = document.createElement("button");
+          btn.type="button";
+          btn.className="choice";
+          btn.dataset.value = opt.value;
+          btn.dataset.selected = state.answers.get(q.id) === opt.value;
+          btn.setAttribute("role","option");
+          btn.setAttribute("aria-pressed", String(btn.dataset.selected === "true"));
+          btn.innerHTML = `
             <span class="choice-label">
-              <strong>${option.title}</strong>
-              <span>${option.description}</span>
+              <strong>${opt.title}</strong>
+              <span>${opt.description}</span>
             </span>
             <span aria-hidden="true">→</span>
           `;
-          choice.addEventListener('click', () => handleAnswer(question.id, option.value));
-          choicesContainer.appendChild(choice);
+          btn.addEventListener("click", ()=>handleAnswer(q.id, opt.value));
+          choicesContainer.appendChild(btn);
         });
       }
 
-      function handleAnswer(id, value) {
+      function handleAnswer(id, value){
         state.answers.set(id, value);
         state.index += 1;
         progressFill.style.width = `${(state.index / questions.length) * 100}%`;
         renderQuestion(state.index);
       }
 
-      function startExperience() {
-        introScreen.dataset.active = 'false';
-        appShell.dataset.active = 'true';
+      function startExperience(){
+        intro.dataset.active = "false";
+        intro.style.display = "none";
+        appShell.dataset.active = "true";
+        appShell.setAttribute("aria-hidden","false");
+
         state.index = 0;
         state.answers.clear();
-        questionCard.style.display = '';
-        resultCard.dataset.active = 'false';
-        resultCard.setAttribute('aria-hidden', 'true');
-        progressFill.style.width = '0%';
+        questionCard.style.display = "";
+        resultCard.dataset.active = "false";
+        resultCard.setAttribute("aria-hidden","true");
+        progressFill.style.width = "0%";
         progressCount.textContent = `0 / ${questions.length}`;
         renderQuestion(state.index);
       }
 
-      function showResult() {
-        questionCard.style.display = 'none';
-        resultCard.dataset.active = 'true';
-        resultCard.setAttribute('aria-hidden', 'false');
+      function showResult(){
+        questionCard.style.display = "none";
+        resultCard.dataset.active = "true";
+        resultCard.setAttribute("aria-hidden","false");
         progressCount.textContent = `${questions.length} / ${questions.length}`;
-        progressFill.style.width = '100%';
+        progressFill.style.width = "100%";
 
         const summary = Array.from(state.answers.entries())
-          .map(([key, value]) => `${key}: ${value}`)
-          .join('\n');
-
-        resultSummary.textContent = summary || '回答が選択されていません。';
+          .map(([k,v])=> `${k}: ${v}`)
+          .join("\n");
+        resultSummary.textContent = summary || "回答が選択されていません。";
       }
 
-      function restart() {
+      function restart(){
         state.index = 0;
         state.answers.clear();
-        questionCard.style.display = '';
-        resultCard.dataset.active = 'false';
-        resultCard.setAttribute('aria-hidden', 'true');
-        progressFill.style.width = '0%';
+        questionCard.style.display = "";
+        resultCard.dataset.active = "false";
+        resultCard.setAttribute("aria-hidden","true");
+        progressFill.style.width = "0%";
         progressCount.textContent = `0 / ${questions.length}`;
         renderQuestion(state.index);
       }
-
-      restartButton.addEventListener('click', restart);
+      restartButton.addEventListener("click", restart);
     </script>
   </body>
 </html>
