@@ -2,196 +2,59 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <!-- Viewport locked for mobile: no zoom, no scaling -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Pairin（ペアリン）｜あなたとワインをマッチング</title>
   <meta name="theme-color" content="#12121a" />
   <style>
-    /* -------------
-      Design tokens
-    ------------- */
     :root{
-      /* Brand & UI colors */
-      --bg-ink:#ffffff;
-      --bg:#0f0f14;                 /* App background (fallback) */
-      --card:#141620cc;              /* Glass card fill (with alpha) */
-      --card-stroke:#ffffff24;       /* Glass card border */
-      --muted:#9aa2b1;               /* Secondary text */
-      --ink:#f5f7fb;                 /* Primary text */
-      --accent:#7cc7ff;              /* Accent (RIGHT/blue vibe) */
-      --accent-2:#9ae6b4;            /* Accent 2 (GREEN vibe) */
-      --radius:22px;                 /* Card/button radius */
+      --bg:#0f0f14;
+      --card:#141620cc;
+      --card-stroke:#ffffff24;
+      --muted:#b8bfcc;
+      --ink:#f8f9fc;
+      --accent:#FFB56B;
+      --accent-2:#FF6B8B;
+      --radius:22px;
       --shadow:0 10px 30px rgba(0,0,0,.35), 0 2px 12px rgba(0,0,0,.25);
-      /* Background image (1980x1080 vertical recommended). Replace URL to swap. */
       --bg-image:url('pairin_title_bg.jpg');
-      --bg-fallback:linear-gradient(160deg, #4D8CF0 0%, #C96AFB 100%); /* fallback gradient if image missing */
+      --bg-fallback:linear-gradient(160deg, var(--accent) 0%, var(--accent-2) 100%);
     }
-
-    /* ------------------------
-       Global reset & lockdown
-    ------------------------ */
     *,*::before,*::after{ box-sizing:border-box; }
     html,body{ height:100%; }
-    html,body{
-      margin:0;
-      padding:0;
-      color:var(--ink);
-      background: var(--bg);
-      overflow:hidden;                 /* Hide and prevent scrollbars */
-      -webkit-text-size-adjust:100%;   /* Prevent iOS text autosizing */
-      overscroll-behavior:none;        /* Disable pull-to-refresh */
-      touch-action:none;               /* Prevent panning/zoom gestures */
-    }
-    /* Hide any scrollbar if something overflows unexpectedly */
+    html,body{ margin:0; padding:0; color:var(--ink); background: var(--bg); overflow:hidden; -webkit-text-size-adjust:100%; overscroll-behavior:none; touch-action:none; }
     *::-webkit-scrollbar{ display:none; }
     *{ -ms-overflow-style:none; scrollbar-width:none; }
-
-    /* --------------
-       Stage (full)
-    -------------- */
-    .stage{ /* NAME: stage - full-screen container */
-      position:fixed;
-      inset:0;
-      width:100vw; height:100vh;
-      display:grid;
-      place-items:center;
-      /* Background image with graceful fallback */
-      background-image: var(--bg-fallback), var(--bg-image);
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      isolation:isolate;
-    }
-
-    /* Subtle vignette to lift the center UI */
-    .stage::after{ /* NAME: vignette */
-      content:"";
-      position:absolute; inset:0;
-      background: radial-gradient(60% 50% at 50% 45%, transparent 0 60%, rgba(0,0,0,.45) 100%);
-      pointer-events:none;
-    }
-
-    /* -----------------
-       Center glass box
-    ----------------- */
-    .card{ /* NAME: hero-card - central rounded box */
-      position:relative;
-      width:min(92vw, 480px);
-      padding:28px 22px 24px;
-      border-radius:var(--radius);
-      background:var(--card);
-      border:1px solid var(--card-stroke);
-      box-shadow:var(--shadow);
-      backdrop-filter: blur(14px) saturate(120%);
-      -webkit-backdrop-filter: blur(14px) saturate(120%);
-      display:flex; flex-direction:column; align-items:center; gap:16px;
-    }
-
-    /* Logo placeholder */
-    .logo{ /* NAME: logo - brand mark */
-      width:68px; height:68px;
-      border-radius:16px;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-      display:grid; place-items:center;
-      font-weight:700; letter-spacing:0.08em; font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Sans","Noto Sans JP",sans-serif;
-      color:#0b1320;
-      box-shadow: inset 0 0 0 2px #ffffff66;
-    }
-
-    .wordmark{ /* NAME: wordmark - app name */
-      margin-top:2px;
-      font-family: ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
-      font-weight:800;
-      font-size: clamp(22px, 5vw, 28px);
-      letter-spacing: .02em;
-    }
-
-    .caption{ /* NAME: caption - supporting line */
-      margin-top:-6px;
-      color:var(--muted);
-      font-size: clamp(12px, 3.6vw, 14px);
-      letter-spacing:.02em;
-      text-align:center;
-    }
-
-    .cta{ /* NAME: cta - primary button */
-      margin-top:8px;
-      appearance:none; border:0; outline:0;
-      border-radius: calc(var(--radius) - 6px);
-      padding:14px 18px;
-      width:100%;
-      font-weight:700;
-      font-size:16px;
-      letter-spacing:.04em;
-      color:#0b1320;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-      box-shadow: var(--shadow), inset 0 -2px 0 rgba(255,255,255,.25);
-      cursor:pointer;
-      transform: translateZ(0);
-      will-change: transform;
-      transition: transform .15s ease, filter .2s ease;
-      touch-action: manipulation; /* allow taps */
-    }
+    .stage{ position:fixed; inset:0; width:100vw; height:100vh; display:grid; place-items:center; background-image: var(--bg-fallback), var(--bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; isolation:isolate; }
+    .stage::after{ content:""; position:absolute; inset:0; background: radial-gradient(60% 50% at 50% 45%, transparent 0 60%, rgba(0,0,0,.45) 100%); pointer-events:none; }
+    .card{ position:relative; width:min(92vw, 480px); padding:28px 22px 24px; border-radius:var(--radius); background:var(--card); border:1px solid var(--card-stroke); box-shadow:var(--shadow); backdrop-filter: blur(14px) saturate(120%); -webkit-backdrop-filter: blur(14px) saturate(120%); display:flex; flex-direction:column; align-items:center; gap:16px; }
+    .logo{ width:92px; height:92px; display:block; border-radius:20px; object-fit:contain; box-shadow: inset 0 0 0 2px #ffffff33; background: transparent; }
+    .wordmark{ margin-top:2px; font-family: ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif; font-weight:800; font-size: clamp(22px, 5vw, 28px); letter-spacing: .02em; }
+    .caption{ margin-top:-6px; color:var(--muted); font-size: clamp(12px, 3.6vw, 14px); letter-spacing:.02em; text-align:center; }
+    .cta{ margin-top:8px; appearance:none; border:0; outline:0; border-radius: calc(var(--radius) - 6px); padding:14px 18px; width:100%; font-weight:700; font-size:16px; letter-spacing:.04em; color:#0b1320; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%); box-shadow: var(--shadow), inset 0 -2px 0 rgba(255,255,255,.25); cursor:pointer; transform: translateZ(0); will-change: transform; transition: transform .15s ease, filter .2s ease; touch-action: manipulation; }
     .cta:active{ transform: scale(.98); }
-
-    /* Tiny helper text area under the button (optional) */
-    .helper{ /* NAME: helper - microcopy under CTA */
-      margin-top:4px; font-size:12px; color:#c8ceda; opacity:.9; text-align:center;
-    }
-
-    /* Safe-area padding for iOS */
+    .helper{ margin-top:4px; font-size:12px; color:#d6dbe6; opacity:.9; text-align:center; }
     .safe{ padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
-
-    /* Prevent text selection for kiosk feel */
     .noselect{ -webkit-user-select:none; user-select:none; }
   </style>
 </head>
 <body class="noselect">
-  <!-- NAME: stage -->
   <main class="stage safe" aria-label="Pairin Title Screen">
-    <!-- NAME: hero-card -->
     <section class="card" role="group" aria-label="タイトルと開始ボタン">
-      <!-- NAME: logo (placeholder square if no SVG) -->
-      <div class="logo" aria-hidden="true">P</div>
-
-      <!-- NAME: wordmark -->
+      <img class="logo" src="pairin_logo.png" alt="Pairin ロゴ" />
       <h1 class="wordmark" aria-label="アプリ名">Pairin</h1>
-
-      <!-- NAME: caption -->
       <p class="caption">あなたとワインをマッチング</p>
-
-      <!-- NAME: cta -->
       <button class="cta" type="button" aria-label="診断をはじめる">診断をはじめる</button>
-
-      <!-- NAME: helper (optional) -->
-      <div class="helper">※ 背景は 1980×1080 の縦長画像を <code>bg-1980x1080.jpg</code> で差し替え可能</div>
     </section>
   </main>
-
   <script>
-    // -----------------------------
-    // Interaction & gesture lock
-    // -----------------------------
     (function(){
-      // NAME: prevent-gestures - Block pinch/zoom/scroll for kiosk-like UX
       const block = (e)=>{ e.preventDefault(); e.stopPropagation(); return false; };
-      ['gesturestart','gesturechange','gestureend','dblclick'].forEach(ev=>{
-        window.addEventListener(ev, block, {passive:false});
-      });
-      // Prevent wheel zoom (Ctrl/Cmd + wheel) and scroll
+      ['gesturestart','gesturechange','gestureend','dblclick'].forEach(ev=>{ window.addEventListener(ev, block, {passive:false}); });
       window.addEventListener('wheel', (e)=>{ if(e.ctrlKey || e.metaKey){ block(e); } }, {passive:false});
       window.addEventListener('touchmove', block, {passive:false});
       window.addEventListener('scroll', ()=>{ window.scrollTo(0,0); }, {passive:true});
-
-      // NAME: cta-action - For now, just adds a gentle pulse to confirm tap
       const btn = document.querySelector('.cta');
-      btn.addEventListener('click', ()=>{
-        btn.animate([
-          { transform:'scale(1)' },
-          { transform:'scale(0.98)' },
-          { transform:'scale(1)' }
-        ], { duration:160, easing:'ease-out' });
-      });
+      btn.addEventListener('click', ()=>{ btn.animate([{ transform:'scale(1)' },{ transform:'scale(0.98)' },{ transform:'scale(1)' }], { duration:160, easing:'ease-out' }); });
     })();
   </script>
 </body>
