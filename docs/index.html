@@ -1,395 +1,198 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    <!-- スマホでのズーム無効 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
-    <title>Pairin - Wine Matching</title>
-    <style>
-      :root{
-        color-scheme: light dark;
-        --fg:#fdf8f5;
-        --muted:rgba(253,248,245,.86);
-        --accent:#ff6d7a;
-        --card:rgba(255,255,255,.06);
-        --glass:rgba(16,10,22,.28);  /* すりガラスのベース色（半透明） */
-        --radius:28px;
-        --shadow:0 24px 80px rgba(0,0,0,.35);
+<head>
+  <meta charset="utf-8" />
+  <!-- Viewport locked for mobile: no zoom, no scaling -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Pairin（ペアリン）｜あなたとワインをマッチング</title>
+  <meta name="theme-color" content="#12121a" />
+  <style>
+    /* -------------
+      Design tokens
+    ------------- */
+    :root{
+      /* Brand & UI colors */
+      --bg-ink:#ffffff;
+      --bg:#0f0f14;                 /* App background (fallback) */
+      --card:#141620cc;              /* Glass card fill (with alpha) */
+      --card-stroke:#ffffff24;       /* Glass card border */
+      --muted:#9aa2b1;               /* Secondary text */
+      --ink:#f5f7fb;                 /* Primary text */
+      --accent:#7cc7ff;              /* Accent (RIGHT/blue vibe) */
+      --accent-2:#9ae6b4;            /* Accent 2 (GREEN vibe) */
+      --radius:22px;                 /* Card/button radius */
+      --shadow:0 10px 30px rgba(0,0,0,.35), 0 2px 12px rgba(0,0,0,.25);
+      /* Background image (1980x1080 vertical recommended). Replace URL to swap. */
+      --bg-image:url('pairin_title_bg.jpg');
+      --bg-fallback:linear-gradient(160deg, #4D8CF0 0%, #C96AFB 100%); /* fallback gradient if image missing */
+    }
 
-        /* 画面端マージン（PC広め, モバイルは下の@mediaで再調整） */
-        --pad-h: clamp(20px, 6vw, 80px);
-        --pad-v: clamp(24px, 8vh, 120px);
+    /* ------------------------
+       Global reset & lockdown
+    ------------------------ */
+    *,*::before,*::after{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    html,body{
+      margin:0;
+      padding:0;
+      color:var(--ink);
+      background: var(--bg);
+      overflow:hidden;                 /* Hide and prevent scrollbars */
+      -webkit-text-size-adjust:100%;   /* Prevent iOS text autosizing */
+      overscroll-behavior:none;        /* Disable pull-to-refresh */
+      touch-action:none;               /* Prevent panning/zoom gestures */
+    }
+    /* Hide any scrollbar if something overflows unexpectedly */
+    *::-webkit-scrollbar{ display:none; }
+    *{ -ms-overflow-style:none; scrollbar-width:none; }
 
-        font-family:"Inter","Noto Sans JP",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      }
+    /* --------------
+       Stage (full)
+    -------------- */
+    .stage{ /* NAME: stage - full-screen container */
+      position:fixed;
+      inset:0;
+      width:100vw; height:100vh;
+      display:grid;
+      place-items:center;
+      /* Background image with graceful fallback */
+      background-image: var(--bg-fallback), var(--bg-image);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      isolation:isolate;
+    }
 
-      /* 全体: 画面スクロール禁止・ズーム抑止・スクロールバー非表示 */
-      html, body{
-        height:100%;
-        overflow:hidden;                 /* 画面全体のスクロール禁止 */
-        margin:0;
-        -webkit-text-size-adjust:100%;
-        touch-action:manipulation;       /* ダブルタップズーム抑止 */
-        color:var(--fg);
-        background:#000;
-      }
-      *{ box-sizing:border-box; }
-      *::-webkit-scrollbar{ display:none; }
-      *{ scrollbar-width:none; -ms-overflow-style:none; }
+    /* Subtle vignette to lift the center UI */
+    .stage::after{ /* NAME: vignette */
+      content:"";
+      position:absolute; inset:0;
+      background: radial-gradient(60% 50% at 50% 45%, transparent 0 60%, rgba(0,0,0,.45) 100%);
+      pointer-events:none;
+    }
 
-      /* 背景：写真をそのまま全面表示（暗くしない） */
-      body{
-        background: url("./pairin_title_bg.jpg") center center / cover no-repeat fixed;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        padding: var(--pad-v) var(--pad-h);
-      }
+    /* -----------------
+       Center glass box
+    ----------------- */
+    .card{ /* NAME: hero-card - central rounded box */
+      position:relative;
+      width:min(92vw, 480px);
+      padding:28px 22px 24px;
+      border-radius:var(--radius);
+      background:var(--card);
+      border:1px solid var(--card-stroke);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(14px) saturate(120%);
+      -webkit-backdrop-filter: blur(14px) saturate(120%);
+      display:flex; flex-direction:column; align-items:center; gap:16px;
+    }
 
-      .app{
-        width:100%;
-        height:100%;
-        display:grid;
-        place-items:center;
-      }
+    /* Logo placeholder */
+    .logo{ /* NAME: logo - brand mark */
+      width:68px; height:68px;
+      border-radius:16px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      display:grid; place-items:center;
+      font-weight:700; letter-spacing:0.08em; font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Sans","Noto Sans JP",sans-serif;
+      color:#0b1320;
+      box-shadow: inset 0 0 0 2px #ffffff66;
+    }
 
-      /* ===== すりガラスのフレーム（中央・見切れ防止） ===== */
-      .frame{
-        position:relative;
-        width: min(980px, 88vw);
-        /* 中身が増えたらフレーム内のみスクロールさせる */
-        overflow:auto;
+    .wordmark{ /* NAME: wordmark - app name */
+      margin-top:2px;
+      font-family: ui-rounded, system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      font-weight:800;
+      font-size: clamp(22px, 5vw, 28px);
+      letter-spacing: .02em;
+    }
 
-        /* 高さはURLバー/ホームバーを考慮しつつ過大化防止 */
-        max-height: calc(
-          100svh - var(--pad-v) * 2
-          - env(safe-area-inset-top, 0px)
-          - env(safe-area-inset-bottom, 0px)
-        );
+    .caption{ /* NAME: caption - supporting line */
+      margin-top:-6px;
+      color:var(--muted);
+      font-size: clamp(12px, 3.6vw, 14px);
+      letter-spacing:.02em;
+      text-align:center;
+    }
 
-        border-radius: var(--radius);
-        padding: clamp(20px, 4vw, 36px);
-        background: var(--glass);
-        backdrop-filter: blur(12px) saturate(120%);     /* ぼかしを弱め */
-        -webkit-backdrop-filter: blur(12px) saturate(120%);
-        box-shadow: var(--shadow);
-        display:grid;
-        place-items:center;     /* ボックス内を中央配置 */
-        gap: clamp(12px, 2.5vw, 24px);
-      }
-      /* svh 非対応ブラウザ用フォールバック */
-      @supports not (height: 100svh){
-        .frame{
-          max-height: calc(
-            100vh - var(--pad-v) * 2
-            - env(safe-area-inset-top, 0px)
-            - env(safe-area-inset-bottom, 0px)
-          );
-        }
-      }
+    .cta{ /* NAME: cta - primary button */
+      margin-top:8px;
+      appearance:none; border:0; outline:0;
+      border-radius: calc(var(--radius) - 6px);
+      padding:14px 18px;
+      width:100%;
+      font-weight:700;
+      font-size:16px;
+      letter-spacing:.04em;
+      color:#0b1320;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      box-shadow: var(--shadow), inset 0 -2px 0 rgba(255,255,255,.25);
+      cursor:pointer;
+      transform: translateZ(0);
+      will-change: transform;
+      transition: transform .15s ease, filter .2s ease;
+      touch-action: manipulation; /* allow taps */
+    }
+    .cta:active{ transform: scale(.98); }
 
-      /* 控えめなグラデ縁取り */
-      .frame::before{
-        content:"";
-        position:absolute;
-        inset:0;
-        border-radius:inherit;
-        padding:2px;
-        background:linear-gradient(135deg,#ff7792 0%, #ffa76a 35%, #b777ff 75%, #6ed3ff 100%);
-        opacity:.75;
-        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-        -webkit-mask-composite:xor;
-                mask-composite:exclude;
-        pointer-events:none;
-      }
+    /* Tiny helper text area under the button (optional) */
+    .helper{ /* NAME: helper - microcopy under CTA */
+      margin-top:4px; font-size:12px; color:#c8ceda; opacity:.9; text-align:center;
+    }
 
-      /* イントロ（中央） */
-      .intro{
-        display:grid;
-        gap:clamp(16px,3vw,22px);
-        text-align:center;
-        width:100%;
-        max-width:760px;  /* 可読幅 */
-      }
-      .logo{
-        width:min(260px,56vw);
-        aspect-ratio:4/1;
-        object-fit:contain;
-        display:block;
-        margin-inline:auto;
-        filter: drop-shadow(0 6px 18px rgba(0,0,0,.28));
-      }
-      .title{
-        margin:0;
-        font-size:clamp(34px,7vw,48px);
-        letter-spacing:.06em;
-        color:#fff;
-        text-shadow:0 2px 10px rgba(0,0,0,.40);
-      }
-      .caption{
-        margin:0;
-        color:var(--muted);
-        font-size:clamp(14px,2.8vw,18px);
-        letter-spacing:.04em;
-        text-shadow:0 1px 6px rgba(0,0,0,.32);
-      }
+    /* Safe-area padding for iOS */
+    .safe{ padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
 
-      .primary-button{
-        justify-self:center;
-        padding:14px 36px;
-        border:none;
-        border-radius:999px;
-        background:linear-gradient(120deg, rgba(255,109,122,.95), rgba(255,178,102,.92));
-        color:#1a0b20;
-        font-size:1rem;
-        font-weight:700;
-        letter-spacing:.06em;
-        cursor:pointer;
-        transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
-        box-shadow:0 10px 26px rgba(0,0,0,.28), 0 12px 28px rgba(255,109,122,.22);
-      }
-      .primary-button:hover,
-      .primary-button:focus-visible{
-        transform:translateY(-2px);
-        box-shadow:0 16px 30px rgba(255,109,122,.45), 0 12px 26px rgba(0,0,0,.25);
-      }
+    /* Prevent text selection for kiosk feel */
+    .noselect{ -webkit-user-select:none; user-select:none; }
+  </style>
+</head>
+<body class="noselect">
+  <!-- NAME: stage -->
+  <main class="stage safe" aria-label="Pairin Title Screen">
+    <!-- NAME: hero-card -->
+    <section class="card" role="group" aria-label="タイトルと開始ボタン">
+      <!-- NAME: logo (placeholder square if no SVG) -->
+      <div class="logo" aria-hidden="true">P</div>
 
-      /* ===== 開始後の本体（中央寄せ＆フレーム内スクロール対応） ===== */
-      .app-shell{
-        display:none;
-        width:100%;
-        max-width:760px;
-      }
-      .app-shell[data-active="true"]{
-        display:grid;
-        gap:16px;
-        justify-self:center;
-      }
+      <!-- NAME: wordmark -->
+      <h1 class="wordmark" aria-label="アプリ名">Pairin</h1>
 
-      header{ display:grid; gap:8px; text-align:center; }
-      header h1{ margin:0; font-size:clamp(22px,5vw,28px); letter-spacing:.08em; }
-      .header-subtitle{ margin:0; color:var(--muted); font-size:.95rem; }
+      <!-- NAME: caption -->
+      <p class="caption">あなたとワインをマッチング</p>
 
-      main{ display:grid; gap:18px; }
+      <!-- NAME: cta -->
+      <button class="cta" type="button" aria-label="診断をはじめる">診断をはじめる</button>
 
-      .progress{ display:flex; gap:12px; align-items:center; padding:6px 0; }
-      .progress-bar{ height:6px; border-radius:999px; background:rgba(255,255,255,.12); flex:1; overflow:hidden; }
-      .progress-bar span{ display:block; height:100%; width:0%; background:linear-gradient(90deg, var(--accent), #ff8c68); transition:width .2s ease; }
+      <!-- NAME: helper (optional) -->
+      <div class="helper">※ 背景は 1980×1080 の縦長画像を <code>bg-1980x1080.jpg</code> で差し替え可能</div>
+    </section>
+  </main>
 
-      .question-card, .result-card{
-        background:var(--card);
-        border-radius:18px;
-        padding:clamp(16px,3vw,24px);
-        display:grid; gap:16px;
-      }
-      .question-meta{ display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:.9rem; }
-      .question-title{ font-size:clamp(18px,4vw,24px); margin:0; }
-      .choices{ display:grid; gap:12px; }
-      .choice{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 18px; border-radius:14px; border:1px solid transparent; background:rgba(255,255,255,.06); cursor:pointer; transition:border-color .18s ease, transform .18s ease, background .18s ease; }
-      .choice:hover, .choice:focus-visible{ border-color:rgba(244,93,72,.7); transform:translateY(-1px); }
-      .choice[data-selected="true"]{ border-color:var(--accent); background:rgba(244,93,72,.18); }
-      .choice-label{ display:grid; gap:2px; text-align:left; }
-      .choice-label span{ color:var(--muted); font-size:.9rem; }
+  <script>
+    // -----------------------------
+    // Interaction & gesture lock
+    // -----------------------------
+    (function(){
+      // NAME: prevent-gestures - Block pinch/zoom/scroll for kiosk-like UX
+      const block = (e)=>{ e.preventDefault(); e.stopPropagation(); return false; };
+      ['gesturestart','gesturechange','gestureend','dblclick'].forEach(ev=>{
+        window.addEventListener(ev, block, {passive:false});
+      });
+      // Prevent wheel zoom (Ctrl/Cmd + wheel) and scroll
+      window.addEventListener('wheel', (e)=>{ if(e.ctrlKey || e.metaKey){ block(e); } }, {passive:false});
+      window.addEventListener('touchmove', block, {passive:false});
+      window.addEventListener('scroll', ()=>{ window.scrollTo(0,0); }, {passive:true});
 
-      .result-card{ display:none; }
-      .result-card[data-active="true"]{ display:grid; }
-      .result-title{ margin:0; font-size:clamp(22px,5vw,28px); }
-      .result-summary{ color:var(--muted); line-height:1.6; white-space:pre-wrap; }
-
-      /* ===== モバイル最適化（さらに見切れ防止を強化） ===== */
-      @media (max-width: 600px){
-        body{
-          /* 端の余白を少し広げてフレーム見切れ防止 */
-          padding: clamp(16px, 4vh, 28px) clamp(16px, 6vw, 28px);
-        }
-        .frame{
-          width: min(640px, 92vw);         /* 横幅をさらに抑える */
-          border-radius: 20px;
-          padding: clamp(16px, 5vw, 28px);
-          max-height: calc(
-            100svh - 2 * clamp(16px, 4vh, 28px)
-            - env(safe-area-inset-top, 0px)
-            - env(safe-area-inset-bottom, 0px)
-          );
-        }
-      }
-      /* svh 非対応端末のモバイル用フォールバック */
-      @supports not (height: 100svh){
-        @media (max-width: 600px){
-          .frame{
-            max-height: calc(
-              100vh - 2 * clamp(16px, 4vh, 28px)
-              - env(safe-area-inset-top, 0px)
-              - env(safe-area-inset-bottom, 0px)
-            );
-          }
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="app">
-      <div class="frame">
-        <!-- イントロ（中央） -->
-        <section class="intro" data-active="true" id="intro">
-          <img class="logo" src="./pairin_logo.png" alt="Pairin ロゴ" />
-          <h1 class="title">Pairin</h1>
-          <p class="caption">あなたとワインをマッチング</p>
-          <button type="button" id="start-button" class="primary-button">はじめる</button>
-        </section>
-
-        <!-- 質問画面（中央・必要時のみフレーム内スクロール） -->
-        <div class="app-shell" data-active="false" id="app-shell" aria-hidden="true">
-          <header>
-            <h1>Pairin</h1>
-            <p class="header-subtitle">あなたとワインをマッチング</p>
-          </header>
-
-          <main>
-            <section class="progress" aria-live="polite">
-              <span id="progress-count">0 / 10</span>
-              <div class="progress-bar"><span id="progress-fill"></span></div>
-            </section>
-
-            <article class="question-card" data-question-index="0" id="question-card">
-              <div class="question-meta">
-                <span id="question-category">シチュエーション</span>
-                <span id="question-step">Q1</span>
-              </div>
-              <h2 class="question-title" id="question-title">今夜はどんなシーンですか？</h2>
-              <div class="choices" role="listbox" aria-labelledby="question-title"></div>
-            </article>
-
-            <article class="result-card" id="result-card" aria-live="polite" aria-hidden="true">
-              <h2 class="result-title">あなたにおすすめのワイン</h2>
-              <p class="result-summary" id="result-summary">回答に応じたおすすめがここに表示されます。</p>
-              <button type="button" id="restart-button" class="choice">最初からやり直す</button>
-            </article>
-          </main>
-        </div>
-      </div>
-    </div>
-
-    <script>
-      /* ズーム抑止（iOS保険） */
-      document.addEventListener("gesturestart", e=>e.preventDefault(), {passive:false});
-      (function(){
-        let last=0;
-        document.addEventListener("touchend",e=>{
-          const now=Date.now();
-          if(now-last<=350){ e.preventDefault(); }
-          last=now;
-        }, {passive:false});
-      })();
-
-      /* 設問データ */
-      const questions=[
-        {id:"scene",category:"シチュエーション",title:"今夜はどんなシーンですか？",
-         options:[{value:"relax",title:"ゆったり自宅で",description:"リラックスタイムに寄り添うワイン"},
-                  {value:"celebrate",title:"お祝いディナー",description:"特別感を演出する１本"}]},
-        {id:"taste",category:"テイスト",title:"味わいはどちらが好み？",
-         options:[{value:"light",title:"軽やか",description:"フレッシュで飲みやすいスタイル"},
-                  {value:"rich", title:"濃厚", description:"しっかりとした味わいを堪能"}]},
-        {id:"color",category:"カラー",title:"色はどちらに惹かれますか？",
-         options:[{value:"white",title:"白ワイン",description:"爽やかな酸味と香り"},
-                  {value:"red",  title:"赤ワイン", description:"芳醇なコクと余韻"}]},
-        {id:"sweetness",category:"甘さ",title:"甘口と辛口、どちら派？",
-         options:[{value:"dry",  title:"辛口", description:"キリっと引き締まった味わい"},
-                  {value:"sweet",title:"甘口", description:"デザートとも相性◎"}]},
-        {id:"food",category:"ペアリング",title:"合わせたい料理は？",
-         options:[{value:"seafood",title:"魚介",description:"白身魚やシーフードに"},
-                  {value:"meat",   title:"肉料理",description:"赤身やグリルにぴったり"}]},
-        {id:"budget",category:"ご予算",title:"予算のイメージを教えてください",
-         options:[{value:"casual", title:"カジュアル (〜3,000円)",description:"気軽に楽しむデイリーワイン"},
-                  {value:"premium",title:"プレミアム (5,000円〜)", description:"特別な日の１本"}]},
-        {id:"origin",category:"生産国",title:"生産国の好みはありますか？",
-         options:[{value:"old-world",title:"旧世界", description:"フランスやイタリアなど"},
-                  {value:"new-world",title:"新世界", description:"カリフォルニアやチリなど"}]},
-        {id:"sparkling",category:"スパークリング",title:"泡のあるワインは？",
-         options:[{value:"still",     title:"スティルワイン", description:"落ち着いて味わいたい"},
-                  {value:"sparkling", title:"スパークリング",  description:"乾杯に華やかさを"}]},
-        {id:"body",category:"ボディ",title:"ボディ感はどうですか？",
-         options:[{value:"medium",title:"ミディアム",description:"バランスのとれた飲みごたえ"},
-                  {value:"full",  title:"フルボディ", description:"力強い深みを楽しむ"}]},
-        {id:"mood",category:"ムード",title:"今日はどんな気分？",
-         options:[{value:"adventure",title:"冒険したい",description:"未知のスタイルに挑戦"},
-                  {value:"familiar", title:"定番で安心",description:"いつもの好みでリラックス"}]}
-      ];
-
-      /* UI 参照 */
-      const state={index:0,answers:new Map()};
-      const intro=document.getElementById("intro");
-      const appShell=document.getElementById("app-shell");
-      const startButton=document.getElementById("start-button");
-      const choicesContainer=document.querySelector(".choices");
-      const questionCard=document.getElementById("question-card");
-      const resultCard=document.getElementById("result-card");
-      const resultSummary=document.getElementById("result-summary");
-      const progressFill=document.getElementById("progress-fill");
-      const progressCount=document.getElementById("progress-count");
-      const questionTitle=document.getElementById("question-title");
-      const questionCategory=document.getElementById("question-category");
-      const questionStep=document.getElementById("question-step");
-      const restartButton=document.getElementById("restart-button");
-
-      startButton.addEventListener("click",startExperience);
-      restartButton.addEventListener("click",restart);
-
-      function renderQuestion(index){
-        const q=questions[index];
-        if(!q){showResult();return;}
-        questionCard.dataset.questionIndex=index;
-        questionCategory.textContent=q.category;
-        questionTitle.textContent=q.title;
-        questionStep.textContent=`Q${index+1}`;
-        progressCount.textContent=`${index+1} / ${questions.length}`;
-        progressFill.style.width=`${(index/questions.length)*100}%`;
-        choicesContainer.innerHTML="";
-        q.options.forEach(opt=>{
-          const btn=document.createElement("button");
-          btn.type="button";
-          btn.className="choice";
-          btn.dataset.value=opt.value;
-          btn.innerHTML=`<span class="choice-label"><strong>${opt.title}</strong><span>${opt.description}</span></span><span aria-hidden="true">→</span>`;
-          btn.addEventListener("click",()=>handleAnswer(q.id,opt.value));
-          choicesContainer.appendChild(btn);
-        });
-      }
-      function handleAnswer(id,value){
-        state.answers.set(id,value);
-        state.index+=1;
-        progressFill.style.width=`${(state.index/questions.length)*100}%`;
-        renderQuestion(state.index);
-      }
-      function startExperience(){
-        intro.style.display="none";
-        appShell.dataset.active="true";
-        appShell.setAttribute("aria-hidden","false");
-        state.index=0;state.answers.clear();
-        questionCard.style.display="";
-        resultCard.dataset.active="false";
-        resultCard.setAttribute("aria-hidden","true");
-        progressFill.style.width="0%";
-        progressCount.textContent=`0 / ${questions.length}`;
-        renderQuestion(state.index);
-      }
-      function showResult(){
-        questionCard.style.display="none";
-        resultCard.dataset.active="true";
-        resultCard.setAttribute("aria-hidden","false");
-        progressCount.textContent=`${questions.length} / ${questions.length}`;
-        progressFill.style.width="100%";
-        resultSummary.textContent=Array.from(state.answers.entries()).map(([k,v])=>`${k}: ${v}`).join("\n")||"回答が選択されていません。";
-      }
-      function restart(){
-        state.index=0;state.answers.clear();
-        questionCard.style.display="";
-        resultCard.dataset.active="false";
-        resultCard.setAttribute("aria-hidden","true");
-        progressFill.style.width="0%";
-        progressCount.textContent=`0 / ${questions.length}`;
-        renderQuestion(state.index);
-      }
-    </script>
-  </body>
+      // NAME: cta-action - For now, just adds a gentle pulse to confirm tap
+      const btn = document.querySelector('.cta');
+      btn.addEventListener('click', ()=>{
+        btn.animate([
+          { transform:'scale(1)' },
+          { transform:'scale(0.98)' },
+          { transform:'scale(1)' }
+        ], { duration:160, easing:'ease-out' });
+      });
+    })();
+  </script>
+</body>
 </html>
