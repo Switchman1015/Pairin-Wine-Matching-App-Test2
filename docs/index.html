@@ -6,7 +6,7 @@
   <title>Pairin（ペアリン）｜あなたとワインをマッチング</title>
   <meta name="theme-color" content="#0b0b10" />
   <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="%23ff6b8b"/></svg>' />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
     :root{
       --bg:#0b0b10;
@@ -24,66 +24,27 @@
     *::-webkit-scrollbar{ display:none; }
     *{ -ms-overflow-style:none; scrollbar-width:none; }
 
-    .stage{
-      position:fixed; inset:0; width:100vw; height:100vh;
-      display:grid; place-items:center;
-      background-image: var(--bg-image);
-      background-size: cover; background-position: center; background-repeat: no-repeat;
-      isolation:isolate;
-    }
+    .stage{ position:fixed; inset:0; width:100vw; height:100vh; display:grid; place-items:center; background-image: var(--bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; isolation:isolate; }
 
     .ambient{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
-    .ambient .bubble{
-      position:absolute; bottom:-14vh;
-      width:var(--sz); height:var(--sz); border-radius:50%;
-      background: transparent;
-      box-shadow: inset 0 0 0 1.2px rgba(255,255,255,.65), 0 0 10px rgba(255,255,255,.18);
-      mix-blend-mode: screen; opacity:.6;
-      animation: rise linear infinite;
-      will-change: transform, opacity;
-    }
-    @keyframes rise{
-      0%{ transform: translateY(0) scale(.9); opacity:0; }
-      12%{ opacity:.6; }
-      100%{ transform: translateY(-120vh) scale(1.15); opacity:0; }
-    }
+    .ambient .bubble{ position:absolute; bottom:-14vh; width:var(--sz); height:var(--sz); border-radius:50%; background: transparent; box-shadow: inset 0 0 0 1.2px rgba(255,255,255,.65), 0 0 10px rgba(255,255,255,.18); mix-blend-mode: screen; opacity:.6; animation: rise linear infinite; will-change: transform, opacity; }
+    @keyframes rise{ 0%{ transform: translateY(0) scale(.9); opacity:0; } 12%{ opacity:.6; } 100%{ transform: translateY(-120vh) scale(1.15); opacity:0; } }
 
-    .card{
-      position:relative; z-index:2;
-      width:min(92vw, 480px); padding:28px 22px 24px;
-      border-radius:var(--radius);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 28%),
-        linear-gradient(135deg, #221a28 0%, #1a1e2a 100%);
-      box-shadow: 0 0 0 1px rgba(255,107,139,.18), var(--shadow);
-      display:flex; flex-direction:column; align-items:center; gap:16px;
-    }
-    .card::before{
-      content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
-      background: linear-gradient(135deg, rgba(255,181,107,.22), rgba(255,107,139,.18));
-      -webkit-mask: linear-gradient(#000,#000) content-box, linear-gradient(#000,#000);
-      -webkit-mask-composite: xor; mask-composite: exclude;
-      padding:1px;
-    }
+    .card{ position:relative; z-index:2; width:min(94vw, 520px); padding:34px 26px 28px; border-radius:var(--radius); background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 28%), linear-gradient(135deg, #221a28 0%, #1a1e2a 100%); box-shadow: 0 0 0 1px rgba(255,107,139,.18), var(--shadow); display:flex; flex-direction:column; align-items:center; gap:18px; }
+    .card::before{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; background: linear-gradient(135deg, rgba(255,181,107,.22), rgba(255,107,139,.18)); -webkit-mask: linear-gradient(#000,#000) content-box, linear-gradient(#000,#000); -webkit-mask-composite: xor; mask-composite: exclude; padding:1px; }
 
-    .logo{ width:92px; height:92px; display:block; object-fit:contain; border-radius:20px; background:transparent; box-shadow:none; }
+    .logo{ width:116px; height:116px; display:block; object-fit:contain; border-radius:22px; background:transparent; box-shadow:none; }
 
-    .wordmark{
-      margin-top:2px;
-      font-family: 'Playfair Display', serif;
-      font-weight:600;
-      font-size: clamp(26px, 6vw, 34px);
-      letter-spacing: .02em;
-      color:#fffaf7;
-      text-shadow: 0 2px 6px rgba(0,0,0,.3);
-    }
+    .wordmark{ margin-top:4px; font-family:'Playfair Display', serif; font-weight:700; font-size: clamp(30px, 7vw, 40px); letter-spacing:.01em; color:#fffaf7; text-shadow: 0 3px 10px rgba(0,0,0,.35); position:relative; }
+    .wordmark::after{ content:""; position:absolute; left:50%; transform:translateX(-50%); bottom:-10px; width:88px; height:3px; border-radius:3px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); opacity:.9; }
 
-    .caption{ margin-top:-6px; color:var(--muted); font-size: clamp(12px, 3.6vw, 14px); letter-spacing:.02em; text-align:center; font-family: system-ui, sans-serif; }
+    .caption{ margin-top:10px; color:var(--muted); font-size: clamp(13px, 3.8vw, 15px); letter-spacing:.06em; text-align:center; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif; text-transform:none; }
 
-    .cta{ margin-top:8px; appearance:none; border:0; outline:0; border-radius: calc(var(--radius) - 6px); padding:14px 18px; width:100%; font-weight:700; font-size:16px; letter-spacing:.04em; color:#0b1320; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%); box-shadow: var(--shadow), inset 0 -2px 0 rgba(255,255,255,.25); cursor:pointer; transform: translateZ(0); will-change: transform; transition: transform .15s ease, filter .2s ease; touch-action: manipulation; }
-    .cta:active{ transform: scale(.98); }
+    .cta{ margin-top:6px; appearance:none; border:0; outline:0; border-radius: 999px; padding:0 22px; width:100%; min-height:56px; font-weight:800; font-size:17px; letter-spacing:.04em; color:#0b1320; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%); box-shadow: 0 6px 18px rgba(255,107,139,.28), 0 2px 10px rgba(0,0,0,.25); cursor:pointer; transform: translateZ(0); will-change: transform; transition: transform .15s ease, filter .2s ease, box-shadow .2s ease; touch-action: manipulation; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .cta::after{ content:"→"; font-weight:800; transform: translateY(1px); }
+    .cta:active{ transform: scale(.98); box-shadow: 0 4px 14px rgba(255,107,139,.22), 0 1px 8px rgba(0,0,0,.22); }
 
-    .safe{ padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+    .safe{ padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
     .noselect{ -webkit-user-select:none; user-select:none; }
   </style>
 </head>
@@ -110,12 +71,12 @@
       for(let i=0;i<COUNT;i++){
         const el = document.createElement('div');
         el.className = 'bubble';
-        const size = Math.round(Math.random()*30 + 26);
-        const dur = 12 + Math.random()*18;
+        const size = Math.round(Math.random()*30 + 26); // 26–56px
+        const dur = 12 + Math.random()*18; // 12–30s
         el.style.setProperty('--sz', size+'px');
         el.style.left = (Math.random()*100)+'%';
         el.style.animationDuration = dur+'s';
-        el.style.animationDelay = (-Math.random()*dur)+'s';
+        el.style.animationDelay = (-Math.random()*dur)+'s'; // 初期から画面内に存在
         ambient.appendChild(el);
       }
 
