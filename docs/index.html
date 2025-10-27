@@ -26,36 +26,48 @@
     .stage{
       position:fixed; inset:0; width:100vw; height:100vh;
       display:grid; place-items:center;
-      background-image: var(--bg-image); /* 画像のみ */
+      background-image: var(--bg-image); /* 背景は画像のみ */
       background-size: cover; background-position: center; background-repeat: no-repeat;
       isolation:isolate;
     }
 
-    /* ambient animation layer (between bg & card) */
+    /* 背景とカードの間：スパークリング泡＋ハートの持続アニメーション */
     .ambient{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
-    .ambient span{
-      position:absolute; bottom:-12vh; border-radius:50%;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.75), rgba(255,255,255,0) 60%);
-      mix-blend-mode:screen; opacity:.45; filter: blur(.6px);
+    .ambient .bubble, .ambient .heart{
+      position:absolute; bottom:-14vh; opacity:.55; filter: blur(.2px);
       animation: rise linear infinite;
       will-change: transform, opacity;
+      mix-blend-mode: screen; /* 背景を暗くしない */
     }
+    .ambient .bubble{ border-radius:50%; background: radial-gradient(circle at 35% 35%, var(--c, rgba(255,255,255,.8)), rgba(255,255,255,0) 60%); }
+    .ambient .heart{ width:var(--sz); height:var(--sz); transform: rotate(45deg); background: var(--c, rgba(255,255,255,.85)); }
+    .ambient .heart::before, .ambient .heart::after{ content:""; position:absolute; width:var(--sz); height:var(--sz); border-radius:50%; background: var(--c, rgba(255,255,255,.85)); }
+    .ambient .heart::before{ left:-50%; }
+    .ambient .heart::after{ top:-50%; }
+
     @keyframes rise{
       0%{ transform: translateY(0) scale(.85); opacity:0; }
       10%{ opacity:.6; }
-      100%{ transform: translateY(-115vh) scale(1.2); opacity:0; }
+      100%{ transform: translateY(-118vh) scale(1.25); opacity:0; }
     }
 
+    /* 見やすさ重視のソリッドカード（単調回避の微グラデ＆エッジ） */
     .card{
       position:relative; z-index:2;
       width:min(92vw, 480px); padding:28px 22px 24px;
       border-radius:var(--radius);
-      background: rgba(255,255,255,0.16); /* 明るい霧ガラス */
-      backdrop-filter: blur(22px) saturate(160%);
-      -webkit-backdrop-filter: blur(22px) saturate(160%);
-      box-shadow: var(--shadow);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 28%),
+        linear-gradient(135deg, #221a28 0%, #1a1e2a 100%);
+      box-shadow: 0 0 0 1px rgba(255,107,139,.18), var(--shadow);
       display:flex; flex-direction:column; align-items:center; gap:16px;
-      border: 1px solid rgba(255,255,255,0.28);
+    }
+    .card::before{ /* うっすら光る縁取り */
+      content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+      background: linear-gradient(135deg, rgba(255,181,107,.22), rgba(255,107,139,.18));
+      -webkit-mask: linear-gradient(#000,#000) content-box, linear-gradient(#000,#000);
+      -webkit-mask-composite: xor; mask-composite: exclude;
+      padding:1px;
     }
 
     .logo{ width:92px; height:92px; display:block; object-fit:contain; border-radius:20px; background:transparent; box-shadow:none; }
@@ -89,18 +101,25 @@
       window.addEventListener('touchmove', block, {passive:false});
       window.addEventListener('scroll', ()=>{ window.scrollTo(0,0); }, {passive:true});
 
-      // generate floating "bubbles" (sparkling wine vibe) between bg and card
       const ambient = document.querySelector('.ambient');
-      const COUNT = 22;
+      const COUNT = 24; // 大きめ＆少し多め
       for(let i=0;i<COUNT;i++){
-        const s = document.createElement('span');
-        const size = Math.random()*28 + 10; // 10 - 38px
-        s.style.width = size+'px';
-        s.style.height = size+'px';
-        s.style.left = (Math.random()*100)+'%';
-        s.style.animationDuration = (12 + Math.random()*16)+'s';
-        s.style.animationDelay = (Math.random()*14)+'s';
-        ambient.appendChild(s);
+        const isHeart = Math.random() < 0.18; // たまにハート
+        const el = document.createElement('div');
+        el.className = isHeart ? 'heart' : 'bubble';
+        const size = Math.round(Math.random()*40 + 28); // 28〜68px
+        el.style.setProperty('--sz', size+'px');
+        el.style.width = size+'px';
+        el.style.height = isHeart ? size+'px' : size+'px';
+        el.style.left = (Math.random()*100)+'%';
+        el.style.animationDuration = (14 + Math.random()*18)+'s';
+        el.style.animationDelay = (Math.random()*12)+'s';
+        const hue = Math.random()*60 - 10; // -10〜50deg（ピンク〜オレンジ〜少し黄）
+        const sat = 72 + Math.random()*18; // 72-90%
+        const light = 60 + Math.random()*20; // 60-80%
+        const col = `hsla(${hue}, ${sat}%, ${light}%, .85)`;
+        el.style.setProperty('--c', col);
+        ambient.appendChild(el);
       }
 
       const btn = document.querySelector('.cta');
