@@ -26,32 +26,28 @@
     .stage{
       position:fixed; inset:0; width:100vw; height:100vh;
       display:grid; place-items:center;
-      background-image: var(--bg-image); /* 背景は画像のみ */
+      background-image: var(--bg-image);
       background-size: cover; background-position: center; background-repeat: no-repeat;
       isolation:isolate;
     }
 
-    /* 背景とカードの間：スパークリング泡＋ハートの持続アニメーション */
+    /* 背景とカードの間：シンプルな丸（発泡）アニメーション */
     .ambient{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
-    .ambient .bubble, .ambient .heart{
-      position:absolute; bottom:-14vh; opacity:.55; filter: blur(.2px);
+    .ambient .bubble{
+      position:absolute; bottom:-14vh;
+      width:var(--sz); height:var(--sz); border-radius:50%;
+      background: transparent; /* 背景を濁さない */
+      box-shadow: inset 0 0 0 1.2px rgba(255,255,255,.65), 0 0 10px rgba(255,255,255,.18);
+      mix-blend-mode: screen; opacity:.6;
       animation: rise linear infinite;
       will-change: transform, opacity;
-      mix-blend-mode: screen; /* 背景を暗くしない */
     }
-    .ambient .bubble{ border-radius:50%; background: radial-gradient(circle at 35% 35%, var(--c, rgba(255,255,255,.8)), rgba(255,255,255,0) 60%); }
-    .ambient .heart{ width:var(--sz); height:var(--sz); transform: rotate(45deg); background: var(--c, rgba(255,255,255,.85)); }
-    .ambient .heart::before, .ambient .heart::after{ content:""; position:absolute; width:var(--sz); height:var(--sz); border-radius:50%; background: var(--c, rgba(255,255,255,.85)); }
-    .ambient .heart::before{ left:-50%; }
-    .ambient .heart::after{ top:-50%; }
-
     @keyframes rise{
-      0%{ transform: translateY(0) scale(.85); opacity:0; }
-      10%{ opacity:.6; }
-      100%{ transform: translateY(-118vh) scale(1.25); opacity:0; }
+      0%{ transform: translateY(0) scale(.9); opacity:0; }
+      12%{ opacity:.6; }
+      100%{ transform: translateY(-120vh) scale(1.15); opacity:0; }
     }
 
-    /* 見やすさ重視のソリッドカード（単調回避の微グラデ＆エッジ） */
     .card{
       position:relative; z-index:2;
       width:min(92vw, 480px); padding:28px 22px 24px;
@@ -62,7 +58,7 @@
       box-shadow: 0 0 0 1px rgba(255,107,139,.18), var(--shadow);
       display:flex; flex-direction:column; align-items:center; gap:16px;
     }
-    .card::before{ /* うっすら光る縁取り */
+    .card::before{
       content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
       background: linear-gradient(135deg, rgba(255,181,107,.22), rgba(255,107,139,.18));
       -webkit-mask: linear-gradient(#000,#000) content-box, linear-gradient(#000,#000);
@@ -101,24 +97,18 @@
       window.addEventListener('touchmove', block, {passive:false});
       window.addEventListener('scroll', ()=>{ window.scrollTo(0,0); }, {passive:true});
 
+      // できるだけ初回表示時から画面内に泡が存在するように、負の遅延を使用
       const ambient = document.querySelector('.ambient');
-      const COUNT = 24; // 大きめ＆少し多め
+      const COUNT = 26;
       for(let i=0;i<COUNT;i++){
-        const isHeart = Math.random() < 0.18; // たまにハート
         const el = document.createElement('div');
-        el.className = isHeart ? 'heart' : 'bubble';
-        const size = Math.round(Math.random()*40 + 28); // 28〜68px
+        el.className = 'bubble';
+        const size = Math.round(Math.random()*30 + 26); // 26〜56px
+        const dur = 12 + Math.random()*18; // 12〜30s
         el.style.setProperty('--sz', size+'px');
-        el.style.width = size+'px';
-        el.style.height = isHeart ? size+'px' : size+'px';
         el.style.left = (Math.random()*100)+'%';
-        el.style.animationDuration = (14 + Math.random()*18)+'s';
-        el.style.animationDelay = (Math.random()*12)+'s';
-        const hue = Math.random()*60 - 10; // -10〜50deg（ピンク〜オレンジ〜少し黄）
-        const sat = 72 + Math.random()*18; // 72-90%
-        const light = 60 + Math.random()*20; // 60-80%
-        const col = `hsla(${hue}, ${sat}%, ${light}%, .85)`;
-        el.style.setProperty('--c', col);
+        el.style.animationDuration = dur+'s';
+        el.style.animationDelay = (-Math.random()*dur)+'s'; // 途中から始まる
         ambient.appendChild(el);
       }
 
