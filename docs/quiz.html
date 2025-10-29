@@ -33,15 +33,18 @@
     .step{ display:flex; flex-direction:column; gap:14px; align-items:center; }
     .qtext{ margin:6px 2px 0; font-size: clamp(16px, 4.5vw, 18px); font-weight:700; text-align:center; }
 
-    .swipe{ position:relative; width:min(92vw, 520px); height:min(56vh, 280px); max-height:320px; display:grid; place-items:center; touch-action:none; }
-    .card-face{ position:relative; width:100%; height:100%; border-radius:18px; overflow:hidden; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 28%), linear-gradient(135deg, #241c2b 0%, #1a1e2a 100%); box-shadow: 0 0 0 1px rgba(255,107,139,.18), var(--shadow); padding:16px; transition: transform .16s ease; will-change: transform; }
-    .tint{ position:absolute; inset:0; pointer-events:none; opacity:0; transition: opacity .06s linear; }
+    .swipe{ position:relative; width:min(96vw, 720px); height:min(78svh, 640px); display:grid; place-items:center; touch-action:none; }
+    .card-face{ position:relative; width:100%; height:100%; border-radius:22px; overflow:hidden; background: #1a1e2a; box-shadow: 0 0 0 1px rgba(255,107,139,.18), var(--shadow); transition: transform .16s ease; will-change: transform; }
+    .img{ position:absolute; inset:0; background-size: cover; background-position: center; opacity:.22; filter: saturate(1) brightness(.98); transition: opacity .08s linear; }
+    .img.left{ left:0; }
+    .img.right{ right:0; }
+    .tint{ position:absolute; inset:0; pointer-events:none; opacity:0; transition: opacity .06s linear; mix-blend-mode: screen; }
     .tint.left{ background: linear-gradient(90deg, rgba(255,181,107,.55), rgba(255,181,107,0)); }
     .tint.right{ background: linear-gradient(270deg, rgba(255,107,139,.55), rgba(255,107,139,0)); }
-    .choice{ position:absolute; top:50%; transform: translateY(-50%) scale(.94); padding:10px 14px; border-radius:12px; font-weight:900; font-size: clamp(16px, 5vw, 22px); letter-spacing:.02em; color:#fffaf7; text-shadow: 0 2px 10px rgba(0,0,0,.35); opacity:.5; user-select:none; pointer-events:none; }
+    .choice{ position:absolute; top:50%; transform: translateY(-50%) scale(.96); padding:12px 16px; border-radius:14px; font-weight:900; font-size: clamp(18px, 6vw, 28px); letter-spacing:.02em; color:#fffaf7; text-shadow: 0 3px 12px rgba(0,0,0,.35); opacity:.55; user-select:none; pointer-events:none; backdrop-filter: blur(1px); }
     .choice.left{ left:14px; border:1px solid rgba(255,181,107,.45); background: rgba(255,181,107,.14); }
     .choice.right{ right:14px; border:1px solid rgba(255,107,139,.45); background: rgba(255,107,139,.14); }
-    .hint{ position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:12px; color:var(--muted); opacity:.85; }
+    .hint{ position:absolute; bottom:12px; left:0; right:0; text-align:center; font-size:12px; color:var(--muted); opacity:.85; }
 
     .meta{ display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:12px; margin-top:2px; }
     .progress{ height:6px; background: rgba(255,255,255,.10); border-radius:999px; overflow:hidden; }
@@ -110,11 +113,46 @@
     $('#retry').addEventListener('click', ()=>{ result.style.display = 'none'; current=0; scores = { red:0, white:0, rose:0, sparkling:0 }; render(); });
 
     const questions = [
-      { key:'body', text:'好みの味わいは？', a:{ label:'軽やか', score:{ white:2, rose:1, sparkling:2 } }, b:{ label:'コクがある', score:{ red:3 } } },
-      { key:'food', text:'合わせたい料理は？', a:{ label:'肉料理', score:{ red:3 } }, b:{ label:'魚料理', score:{ white:3, rose:1 } } },
-      { key:'temp', text:'飲むときの温度は？', a:{ label:'冷やして', score:{ white:2, rose:2 } }, b:{ label:'常温で', score:{ red:2 } } },
-      { key:'scene', text:'シーンは？', a:{ label:'カジュアル', score:{ white:1, rose:1 } }, b:{ label:'お祝い', score:{ sparkling:3 } } },
-      { key:'price', text:'価格帯は？', a:{ label:'カジュアル', score:{ white:1, rose:1 } }, b:{ label:'リッチ', score:{ red:1, sparkling:1 } } }
+      { key:'body', text:'今の気分に近いのは？',
+        a:{ label:'昼下がりの軽やかさ', score:{ white:2, rose:1, sparkling:2 } },
+        b:{ label:'夜にじっくり、落ち着き', score:{ red:3 } }
+      },
+      { key:'food', text:'香りで惹かれるのは？',
+        a:{ label:'海のミネラル感', score:{ white:3, rose:1 } },
+        b:{ label:'炭火の香ばしさ', score:{ red:3 } }
+      },
+      { key:'temp', text:'手にしたグラス、どんな感触？',
+        a:{ label:'ひんやり、結露でしっとり', score:{ white:2, rose:2 } },
+        b:{ label:'常温でゆっくり余韻', score:{ red:2 } }
+      },
+      { key:'scene', text:'今夜の雰囲気は？',
+        a:{ label:'賑やかに乾杯', score:{ sparkling:3 } },
+        b:{ label:'静かに語らう', score:{ red:1, white:1 } }
+      },
+      { key:'mood', text:'今日はどちらの気分？',
+        a:{ label:'肩の力を抜いて気軽に', score:{ white:1, rose:1 } },
+        b:{ label:'少し背伸びして特別に', score:{ red:1, sparkling:1 } }
+      },
+      { key:'firstsip', text:'最初の一口の理想は？',
+        a:{ label:'きりっと、はじける', score:{ sparkling:3 } },
+        b:{ label:'とろり、広がる', score:{ red:2, white:1 } }
+      },
+      { key:'holiday', text:'休みの日の過ごし方は？',
+        a:{ label:'海辺や公園でピクニック', score:{ rose:2, white:1 } },
+        b:{ label:'家で映画や読書', score:{ red:2 } }
+      },
+      { key:'color', text:'グラスに注がれた色は？',
+        a:{ label:'淡いレモン色を想像', score:{ white:3 } },
+        b:{ label:'深いルビー色を想像', score:{ red:3 } }
+      },
+      { key:'after', text:'食後の締めくくりは？',
+        a:{ label:'すっきり軽やかに', score:{ sparkling:2, white:1 } },
+        b:{ label:'余韻を長く楽しむ', score:{ red:2 } }
+      },
+      { key:'music', text:'今の音楽の気分は？',
+        a:{ label:'アップテンポで明るく', score:{ sparkling:2, rose:1, white:1 } },
+        b:{ label:'ジャズやバラードでしっとり', score:{ red:2 } }
+      }
     ];
 
     function describe(type){
@@ -153,6 +191,8 @@
         <div class="qtext">${current+1}. ${q.text}</div>
         <div class="swipe" id="swipe" aria-label="左右にスワイプして選択">
           <div class="card-face" id="card">
+            <div class="img left" id="imgL"></div>
+            <div class="img right" id="imgR"></div>
             <div class="tint left" id="tintL"></div>
             <div class="tint right" id="tintR"></div>
             <div class="choice left" id="choiceL">${q.a.label}</div>
@@ -166,36 +206,44 @@
 
       const swipe = document.getElementById('swipe');
       const card = document.getElementById('card');
+      const imgL = document.getElementById('imgL');
+      const imgR = document.getElementById('imgR');
       const tintL = document.getElementById('tintL');
       const tintR = document.getElementById('tintR');
       const choiceL = document.getElementById('choiceL');
       const choiceR = document.getElementById('choiceR');
+      // set images if provided
+      if(q.a.img){ imgL.style.backgroundImage = `url(${q.a.img})`; }
+      if(q.b.img){ imgR.style.backgroundImage = `url(${q.b.img})`; }
 
       let startX = 0, dx = 0, dragging = false, pointerId = null;
       const THRESH = 80;
       function setVisuals(){
         const p = Math.min(1, Math.abs(dx)/THRESH);
         if(dx < 0){
+          imgL.style.opacity = String(0.25 + 0.65*p);
+          imgR.style.opacity = '0.18';
           tintL.style.opacity = String(0.2 + 0.6*p);
           tintR.style.opacity = '0';
-          choiceL.style.opacity = String(0.6 + 0.4*p);
-          choiceL.style.transform = `translateY(-50%) scale(${(0.94 + 0.12*p).toFixed(3)})`;
-          choiceR.style.opacity = '0.35';
-          choiceR.style.transform = 'translateY(-50%) scale(0.94)';
+          choiceL.style.opacity = String(0.65 + 0.35*p);
+          choiceL.style.transform = `translateY(-50%) scale(${(0.96 + 0.18*p).toFixed(3)})`;
+          choiceR.style.opacity = '0.3';
+          choiceR.style.transform = 'translateY(-50%) scale(0.96)';
         }else if(dx > 0){
+          imgR.style.opacity = String(0.25 + 0.65*p);
+          imgL.style.opacity = '0.18';
           tintR.style.opacity = String(0.2 + 0.6*p);
           tintL.style.opacity = '0';
-          choiceR.style.opacity = String(0.6 + 0.4*p);
-          choiceR.style.transform = `translateY(-50%) scale(${(0.94 + 0.12*p).toFixed(3)})`;
-          choiceL.style.opacity = '0.35';
-          choiceL.style.transform = 'translateY(-50%) scale(0.94)';
+          choiceR.style.opacity = String(0.65 + 0.35*p);
+          choiceR.style.transform = `translateY(-50%) scale(${(0.96 + 0.18*p).toFixed(3)})`;
+          choiceL.style.opacity = '0.3';
+          choiceL.style.transform = 'translateY(-50%) scale(0.96)';
         }else{
-          tintL.style.opacity = '0';
-          tintR.style.opacity = '0';
-          choiceL.style.opacity = '0.5';
-          choiceR.style.opacity = '0.5';
-          choiceL.style.transform = 'translateY(-50%) scale(0.94)';
-          choiceR.style.transform = 'translateY(-50%) scale(0.94)';
+          imgL.style.opacity = '.22'; imgR.style.opacity = '.22';
+          tintL.style.opacity = '0'; tintR.style.opacity = '0';
+          choiceL.style.opacity = '0.55'; choiceR.style.opacity = '0.55';
+          choiceL.style.transform = 'translateY(-50%) scale(0.96)';
+          choiceR.style.transform = 'translateY(-50%) scale(0.96)';
         }
       }
       function setTransform(anim){
