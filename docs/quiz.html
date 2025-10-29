@@ -34,15 +34,14 @@
     .qtext{ margin:6px 2px 0; font-size: clamp(16px, 4.5vw, 18px); font-weight:700; text-align:center; }
 
     .swipe{ position:relative; width:min(92vw, 520px); height:min(56vh, 280px); max-height:320px; display:grid; place-items:center; touch-action:none; }
-    .card-face{ position:relative; width:100%; height:100%; border-radius:18px; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 28%), linear-gradient(135deg, #241c2b 0%, #1a1e2a 100%); box-shadow: 0 0 0 1px rgba(255,107,139,.18), var(--shadow); display:grid; grid-template-rows:auto 1fr auto; align-items:center; padding:16px; transition: transform .16s ease; will-change: transform; }
-    .labels{ width:100%; display:flex; justify-content:space-between; font-weight:800; font-size:14px; letter-spacing:.02em; }
-    .labels .l{ color: var(--accent); }
-    .labels .r{ color: var(--accent-2); }
-    .hint{ align-self:end; font-size:12px; color:var(--muted); opacity:.8; }
-
-    .badge{ position:absolute; top:14px; padding:8px 12px; border-radius:999px; font-weight:800; font-size:13px; color:#0b1320; box-shadow: 0 6px 18px rgba(0,0,0,.25); opacity:.15; user-select:none; pointer-events:none; }
-    .badge.left{ left:14px; background: var(--accent); }
-    .badge.right{ right:14px; background: var(--accent-2); }
+    .card-face{ position:relative; width:100%; height:100%; border-radius:18px; overflow:hidden; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 28%), linear-gradient(135deg, #241c2b 0%, #1a1e2a 100%); box-shadow: 0 0 0 1px rgba(255,107,139,.18), var(--shadow); padding:16px; transition: transform .16s ease; will-change: transform; }
+    .tint{ position:absolute; inset:0; pointer-events:none; opacity:0; transition: opacity .06s linear; }
+    .tint.left{ background: linear-gradient(90deg, rgba(255,181,107,.55), rgba(255,181,107,0)); }
+    .tint.right{ background: linear-gradient(270deg, rgba(255,107,139,.55), rgba(255,107,139,0)); }
+    .choice{ position:absolute; top:50%; transform: translateY(-50%) scale(.94); padding:10px 14px; border-radius:12px; font-weight:900; font-size: clamp(16px, 5vw, 22px); letter-spacing:.02em; color:#fffaf7; text-shadow: 0 2px 10px rgba(0,0,0,.35); opacity:.5; user-select:none; pointer-events:none; }
+    .choice.left{ left:14px; border:1px solid rgba(255,181,107,.45); background: rgba(255,181,107,.14); }
+    .choice.right{ right:14px; border:1px solid rgba(255,107,139,.45); background: rgba(255,107,139,.14); }
+    .hint{ position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:12px; color:var(--muted); opacity:.85; }
 
     .meta{ display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:12px; margin-top:2px; }
     .progress{ height:6px; background: rgba(255,255,255,.10); border-radius:999px; overflow:hidden; }
@@ -153,12 +152,12 @@
       stepEl.innerHTML = `
         <div class="qtext">${current+1}. ${q.text}</div>
         <div class="swipe" id="swipe" aria-label="左右にスワイプして選択">
-          <div class="badge left" id="badgeL">${q.a.label}</div>
-          <div class="badge right" id="badgeR">${q.b.label}</div>
           <div class="card-face" id="card">
-            <div class="labels"><span class="l">左: ${q.a.label}</span><span class="r">右: ${q.b.label}</span></div>
-            <div></div>
-            <div class="hint">左にスワイプ / 右にスワイプ</div>
+            <div class="tint left" id="tintL"></div>
+            <div class="tint right" id="tintR"></div>
+            <div class="choice left" id="choiceL">${q.a.label}</div>
+            <div class="choice right" id="choiceR">${q.b.label}</div>
+            <div class="hint">スワイプで選択</div>
           </div>
         </div>
       `;
@@ -167,21 +166,43 @@
 
       const swipe = document.getElementById('swipe');
       const card = document.getElementById('card');
-      const badgeL = document.getElementById('badgeL');
-      const badgeR = document.getElementById('badgeR');
+      const tintL = document.getElementById('tintL');
+      const tintR = document.getElementById('tintR');
+      const choiceL = document.getElementById('choiceL');
+      const choiceR = document.getElementById('choiceR');
 
       let startX = 0, dx = 0, dragging = false, pointerId = null;
       const THRESH = 80;
-      function setBadges(){
+      function setVisuals(){
         const p = Math.min(1, Math.abs(dx)/THRESH);
-        badgeL.style.opacity = dx < 0 ? String(0.15 + 0.85*p) : '0.15';
-        badgeR.style.opacity = dx > 0 ? String(0.15 + 0.85*p) : '0.15';
+        if(dx < 0){
+          tintL.style.opacity = String(0.2 + 0.6*p);
+          tintR.style.opacity = '0';
+          choiceL.style.opacity = String(0.6 + 0.4*p);
+          choiceL.style.transform = `translateY(-50%) scale(${(0.94 + 0.12*p).toFixed(3)})`;
+          choiceR.style.opacity = '0.35';
+          choiceR.style.transform = 'translateY(-50%) scale(0.94)';
+        }else if(dx > 0){
+          tintR.style.opacity = String(0.2 + 0.6*p);
+          tintL.style.opacity = '0';
+          choiceR.style.opacity = String(0.6 + 0.4*p);
+          choiceR.style.transform = `translateY(-50%) scale(${(0.94 + 0.12*p).toFixed(3)})`;
+          choiceL.style.opacity = '0.35';
+          choiceL.style.transform = 'translateY(-50%) scale(0.94)';
+        }else{
+          tintL.style.opacity = '0';
+          tintR.style.opacity = '0';
+          choiceL.style.opacity = '0.5';
+          choiceR.style.opacity = '0.5';
+          choiceL.style.transform = 'translateY(-50%) scale(0.94)';
+          choiceR.style.transform = 'translateY(-50%) scale(0.94)';
+        }
       }
       function setTransform(anim){
         const rot = Math.max(-12, Math.min(12, dx*0.06));
         if(anim){ card.style.transition = 'transform .16s ease'; } else { card.style.transition = 'none'; }
         card.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
-        setBadges();
+        setVisuals();
       }
       function release(){
         if(Math.abs(dx) >= THRESH){
