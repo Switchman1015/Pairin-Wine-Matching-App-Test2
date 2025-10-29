@@ -15,103 +15,58 @@
       --bg-image:url('pairin_title_bg.jpg');
     }
     *,*::before,*::after{ box-sizing:border-box; }
-    html,body{ height:100%; margin:0; padding:0; color:var(--ink); background: var(--bg); -webkit-text-size-adjust:100%; }
+    html,body{ height:100%; margin:0; padding:0; color:var(--ink); background: var(--bg); overflow:hidden; -webkit-text-size-adjust:100%; overscroll-behavior:none; touch-action:none; }
     *::-webkit-scrollbar{ display:none; } *{ -ms-overflow-style:none; scrollbar-width:none; }
 
-    .stage{ min-height:100vh; display:grid; place-items:center; background-image: var(--bg-image); background-size: cover; background-position:center; }
-    .card{ width:min(96vw, 720px); margin:20px; border-radius:var(--radius);
+    .stage{ position:fixed; inset:0; width:100vw; height:100svh; display:grid; place-items:center; background-image: var(--bg-image); background-size: cover; background-position:center; isolation:isolate; }
+    .card{ width:min(94vw, 560px); margin:0; border-radius:var(--radius);
            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 28%), linear-gradient(135deg, #221a28 0%, #1a1e2a 100%);
            box-shadow: 0 0 0 1px rgba(255,107,139,.18), var(--shadow);
-           padding:24px 20px; }
+           padding:24px 20px; display:flex; flex-direction:column; gap:14px; align-items:stretch; }
     .card::before{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; }
 
     .header{ display:flex; align-items:center; gap:12px; }
     .logo{ width:48px; height:48px; border-radius:12px; }
     .title{ font-family:'Playfair Display', serif; font-size: clamp(22px, 4vw, 28px); margin:0; }
-    .subtitle{ color:var(--muted); margin:2px 0 14px; font-size:14px; }
+    .subtitle{ color:var(--muted); margin:2px 0 10px; font-size:14px; }
 
-    form{ display:grid; gap:16px; }
-    fieldset{ margin:0; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,.14); }
-    legend{ padding:0 6px; color:#fffaf7; font-weight:700; letter-spacing:.02em; }
-    .opts{ display:grid; gap:10px; margin-top:8px; }
-    label.opt{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; background: rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10); cursor:pointer; }
-    input[type=radio]{ appearance:none; width:18px; height:18px; border-radius:50%; border:2px solid #fff; display:grid; place-items:center; }
-    input[type=radio]::before{ content:""; width:10px; height:10px; border-radius:50%; transform:scale(0); background: linear-gradient(135deg, var(--accent), var(--accent-2)); transition: transform .15s ease; }
-    input[type=radio]:checked::before{ transform:scale(1); }
+    .step{ display:flex; flex-direction:column; gap:14px; }
+    .qtext{ margin:6px 2px 0; font-size: clamp(16px, 4.5vw, 18px); font-weight:700; }
+    .opts2{ display:grid; gap:10px; grid-template-columns: 1fr; }
+    .optbtn{ appearance:none; border:0; border-radius:14px; padding:16px 16px; font-weight:800; font-size:16px; letter-spacing:.02em; color:#0b1320; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%); box-shadow: 0 6px 18px rgba(255,107,139,.28), 0 2px 10px rgba(0,0,0,.25); cursor:pointer; }
+    .optbtn.secondary{ background: rgba(255,255,255,.08); color:#fff; box-shadow:none; border:1px solid rgba(255,255,255,.14); }
+
+    .meta{ display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:12px; margin-top:2px; }
+    .progress{ height:6px; background: rgba(255,255,255,.10); border-radius:999px; overflow:hidden; }
+    .bar{ height:100%; width:0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
 
     .actions{ display:flex; gap:10px; margin-top:8px; }
     .btn{ flex:1; appearance:none; border:0; border-radius:999px; padding:14px 18px; font-weight:800; letter-spacing:.04em; color:#0b1320; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%); box-shadow: 0 6px 18px rgba(255,107,139,.28), 0 2px 10px rgba(0,0,0,.25); cursor:pointer; }
     .btn.secondary{ background: rgba(255,255,255,.08); color:#fff; box-shadow:none; border:1px solid rgba(255,255,255,.14); }
 
-    .result{ display:none; margin-top:12px; padding:16px; border-radius:14px; background: rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.12); }
+    .result{ display:none; margin-top:6px; padding:16px; border-radius:14px; background: rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.12); }
     .result h2{ margin:0 0 8px; font-size:20px; }
     .tips{ color:var(--muted); font-size:14px; margin:8px 0 0; }
   </style>
 </head>
-<body>
+<body class="noselect">
   <main class="stage">
     <section class="card" role="group" aria-label="ワイン診断">
       <div class="header">
         <img class="logo" src="pairin_logo.png" alt="Pairin ロゴ" />
         <div>
           <h1 class="title">ワイン診断</h1>
-          <p class="subtitle">5つの質問に答えるだけで、あなたに合うワインタイプを提案します。</p>
+          <p class="subtitle">2択の質問に順番に答えてください（全5問）。</p>
         </div>
       </div>
 
-      <form id="quiz" aria-label="診断フォーム">
-        <fieldset>
-          <legend>1. 好みの味わいは？</legend>
-          <div class="opts">
-            <label class="opt"><input type="radio" name="body" value="light" required> 軽め</label>
-            <label class="opt"><input type="radio" name="body" value="medium"> 中庸</label>
-            <label class="opt"><input type="radio" name="body" value="full"> しっかり</label>
-          </div>
-        </fieldset>
+      <div class="meta">
+        <span id="stepText">1 / 5</span>
+        <a href="index.html" style="color:var(--muted); text-decoration:none;">タイトルへ</a>
+      </div>
+      <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
 
-        <fieldset>
-          <legend>2. ペアリングしたい料理は？</legend>
-          <div class="opts">
-            <label class="opt"><input type="radio" name="food" value="meat" required> 肉料理</label>
-            <label class="opt"><input type="radio" name="food" value="fish"> 魚料理</label>
-            <label class="opt"><input type="radio" name="food" value="cheese"> チーズ</label>
-            <label class="opt"><input type="radio" name="food" value="washoku"> 和食</label>
-            <label class="opt"><input type="radio" name="food" value="dessert"> デザート</label>
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>3. 飲むときの温度は？</legend>
-          <div class="opts">
-            <label class="opt"><input type="radio" name="temp" value="chilled" required> 冷やして</label>
-            <label class="opt"><input type="radio" name="temp" value="ambient"> 常温で</label>
-            <label class="opt"><input type="radio" name="temp" value="cold"> よく冷やして</label>
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>4. シーンは？</legend>
-          <div class="opts">
-            <label class="opt"><input type="radio" name="scene" value="casual" required> 日常</label>
-            <label class="opt"><input type="radio" name="scene" value="celebration"> お祝い</label>
-            <label class="opt"><input type="radio" name="scene" value="outdoor"> アウトドア</label>
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>5. 価格帯は？</legend>
-          <div class="opts">
-            <label class="opt"><input type="radio" name="price" value="casual" required> カジュアル（〜2,000円）</label>
-            <label class="opt"><input type="radio" name="price" value="middle"> ミドル（2,000〜5,000円）</label>
-            <label class="opt"><input type="radio" name="price" value="rich"> リッチ（5,000円〜）</label>
-          </div>
-        </fieldset>
-
-        <div class="actions">
-          <button class="btn" type="submit" aria-label="診断する">診断する</button>
-          <button class="btn secondary" type="button" id="back" aria-label="タイトルへ戻る">戻る</button>
-        </div>
-      </form>
+      <div id="step" class="step" role="group" aria-live="polite"></div>
 
       <div class="result" id="result" role="region" aria-live="polite">
         <h2 id="resultTitle">結果</h2>
@@ -126,96 +81,90 @@
   </main>
 
   <script>
+    // Disable zoom/scroll gestures per app policy
+    (function(){
+      const block = (e)=>{ e.preventDefault(); e.stopPropagation(); return false; };
+      ['gesturestart','gesturechange','gestureend','dblclick'].forEach(ev=>{ window.addEventListener(ev, block, {passive:false}); });
+      window.addEventListener('wheel', (e)=>{ if(e.ctrlKey || e.metaKey){ block(e); } }, {passive:false});
+      window.addEventListener('touchmove', block, {passive:false});
+      window.addEventListener('scroll', ()=>{ window.scrollTo(0,0); }, {passive:true});
+    })();
+
     const $ = (sel) => document.querySelector(sel);
-    const quiz = $('#quiz');
+    const stepEl = $('#step');
+    const bar = $('#bar');
+    const stepText = $('#stepText');
     const result = $('#result');
     const titleEl = $('#resultTitle');
     const bodyEl = $('#resultBody');
     const tipsEl = $('#resultTips');
 
-    $('#back').addEventListener('click', ()=>{ window.location.href = 'index.html'; });
     $('#toHome').addEventListener('click', ()=>{ window.location.href = 'index.html'; });
-    $('#retry').addEventListener('click', ()=>{
-      result.style.display = 'none';
-      quiz.style.display = 'grid';
-      quiz.reset();
-      window.scrollTo({top:0, behavior:'smooth'});
-    });
+    $('#retry').addEventListener('click', ()=>{ result.style.display = 'none'; current=0; scores = { red:0, white:0, rose:0, sparkling:0 }; render(); });
 
-    function score(answers){
-      const s = { red:0, white:0, rose:0, sparkling:0 };
-      // 1. 味わい
-      if(answers.body === 'light'){ s.white+=2; s.rose+=1; s.sparkling+=2; }
-      if(answers.body === 'medium'){ s.red+=1; s.white+=1; s.rose+=2; }
-      if(answers.body === 'full'){ s.red+=3; }
-      // 2. 料理
-      if(answers.food === 'meat'){ s.red+=3; }
-      if(answers.food === 'fish'){ s.white+=3; s.rose+=1; }
-      if(answers.food === 'cheese'){ s.red+=1; s.white+=1; s.sparkling+=2; }
-      if(answers.food === 'washoku'){ s.white+=2; s.rose+=2; }
-      if(answers.food === 'dessert'){ s.sparkling+=1; s.rose+=2; }
-      // 3. 温度
-      if(answers.temp === 'chilled'){ s.white+=2; s.rose+=2; }
-      if(answers.temp === 'ambient'){ s.red+=2; }
-      if(answers.temp === 'cold'){ s.sparkling+=3; }
-      // 4. シーン
-      if(answers.scene === 'casual'){ s.white+=1; s.rose+=1; }
-      if(answers.scene === 'celebration'){ s.sparkling+=3; }
-      if(answers.scene === 'outdoor'){ s.rose+=2; s.white+=1; }
-      // 5. 価格帯（重みは控えめ）
-      if(answers.price === 'casual'){ s.white+=1; s.rose+=1; }
-      if(answers.price === 'middle'){ s.red+=1; }
-      if(answers.price === 'rich'){ s.red+=1; s.sparkling+=1; }
-      return s;
-    }
+    const questions = [
+      { key:'body', text:'好みの味わいは？', a:{ label:'軽やか', score:{ white:2, rose:1, sparkling:2 } }, b:{ label:'コクがある', score:{ red:3 } } },
+      { key:'food', text:'合わせたい料理は？', a:{ label:'肉料理', score:{ red:3 } }, b:{ label:'魚料理', score:{ white:3, rose:1 } } },
+      { key:'temp', text:'飲むときの温度は？', a:{ label:'冷やして', score:{ white:2, rose:2 } }, b:{ label:'常温で', score:{ red:2 } } },
+      { key:'scene', text:'シーンは？', a:{ label:'カジュアル', score:{ white:1, rose:1 } }, b:{ label:'お祝い', score:{ sparkling:3 } } },
+      { key:'price', text:'価格帯は？', a:{ label:'カジュアル', score:{ white:1, rose:1 } }, b:{ label:'リッチ', score:{ red:1, sparkling:1 } } }
+    ];
 
     function describe(type){
       switch(type){
-        case 'red':
-          return {
-            title: 'あなたにおすすめは「赤ワイン」',
-            body: 'しっかりめの味わいが好みで、肉料理との相性を重視するあなたには赤ワイン。品種ならカベルネ・ソーヴィニヨンやシラー、もう少し軽めならピノ・ノワールも。',
-            tips: 'サーロインや煮込み料理、熟成チーズと好相性。16〜18℃で。'
-          };
-        case 'white':
-          return {
-            title: 'あなたにおすすめは「白ワイン」',
-            body: '爽やかな飲み口や料理に寄り添う万能さを求めるあなたには白。ソーヴィニヨン・ブランやシャルドネ、和食にはリースリングも好相性。',
-            tips: '魚介や野菜、和食全般に。8〜12℃で冷やして。'
-          };
-        case 'rose':
-          return {
-            title: 'あなたにおすすめは「ロゼ」',
-            body: '白の飲みやすさと赤のコクの良いとこ取り。チーズやアジアン、アウトドアの食事にも寄り添う万能タイプ。',
-            tips: '軽い肉料理や魚、スパイス料理と。8〜12℃で。'
-          };
-        case 'sparkling':
-        default:
-          return {
-            title: 'あなたにおすすめは「スパークリング」',
-            body: 'お祝いの席やよく冷えた一杯を楽しみたいあなたに。シャンパーニュ方式の辛口や、カジュアルならプロセッコも。',
-            tips: '前菜から食後まで幅広く。5〜8℃でしっかり冷やして。'
-          };
+        case 'red': return { title:'あなたにおすすめは「赤ワイン」', body:'しっかりめの味わいが好みで、肉料理との相性を重視するあなたには赤ワイン。品種ならカベルネ・ソーヴィニヨンやシラー、もう少し軽めならピノ・ノワールも。', tips:'サーロインや煮込み料理、熟成チーズと好相性。16〜18℃で。' };
+        case 'white': return { title:'あなたにおすすめは「白ワイン」', body:'爽やかな飲み口や料理に寄り添う万能さを求めるあなたには白。ソーヴィニヨン・ブランやシャルドネ、和食にはリースリングも好相性。', tips:'魚介や野菜、和食全般に。8〜12℃で冷やして。' };
+        case 'rose': return { title:'あなたにおすすめは「ロゼ」', body:'白の飲みやすさと赤のコクの良いとこ取り。チーズやアジアン、アウトドアの食事にも寄り添う万能タイプ。', tips:'軽い肉料理や魚、スパイス料理と。8〜12℃で。' };
+        default: return { title:'あなたにおすすめは「スパークリング」', body:'お祝いの席やよく冷えた一杯を楽しみたいあなたに。シャンパーニュ方式の辛口や、カジュアルならプロセッコも。', tips:'前菜から食後まで幅広く。5〜8℃でしっかり冷やして。' };
       }
     }
 
-    quiz.addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const fd = new FormData(quiz);
-      const a = Object.fromEntries(fd.entries());
-      const s = score(a);
-      const best = Object.entries(s).sort((a,b)=> b[1]-a[1])[0][0];
-      const d = describe(best);
+    let current = 0;
+    let scores = { red:0, white:0, rose:0, sparkling:0 };
 
-      titleEl.textContent = d.title;
-      bodyEl.textContent = d.body;
-      tipsEl.textContent = d.tips;
+    function applyScore(delta){
+      for(const k in delta){ scores[k] += delta[k]; }
+    }
 
-      quiz.style.display = 'none';
-      result.style.display = 'block';
-      result.scrollIntoView({ behavior:'smooth' });
-    });
+    function render(){
+      if(current >= questions.length){
+        const best = Object.entries(scores).sort((a,b)=> b[1]-a[1])[0][0];
+        const d = describe(best);
+        titleEl.textContent = d.title;
+        bodyEl.textContent = d.body;
+        tipsEl.textContent = d.tips;
+        stepEl.style.display = 'none';
+        result.style.display = 'block';
+        bar.style.width = '100%';
+        stepText.textContent = `${questions.length} / ${questions.length}`;
+        return;
+      }
+      result.style.display = 'none';
+      stepEl.style.display = 'flex';
+      const q = questions[current];
+      stepEl.innerHTML = `
+        <div class="qtext">${current+1}. ${q.text}</div>
+        <div class="opts2">
+          <button class="optbtn" data-which="a" type="button">${q.a.label}</button>
+          <button class="optbtn secondary" data-which="b" type="button">${q.b.label}</button>
+        </div>
+      `;
+      stepText.textContent = `${current+1} / ${questions.length}`;
+      bar.style.width = `${Math.round((current)/questions.length*100)}%`;
+      stepEl.querySelectorAll('.optbtn').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const which = btn.getAttribute('data-which');
+          const delta = which === 'a' ? q.a.score : q.b.score;
+          // quick tap animation
+          btn.animate([{ transform:'scale(1)' }, { transform:'scale(0.98)' }, { transform:'scale(1)' }], { duration:160, easing:'ease-out' });
+          applyScore(delta);
+          current += 1;
+          render();
+        });
+      });
+    }
+
+    render();
   </script>
 </body>
 </html>
-
