@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Pairin 診断｜あなたに合うワインを提案</title>
+  <meta name="theme-color" content="#0b0b10" />
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="%23ff6b8b"/></svg>' />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0b10; --muted:#c7cedb; --ink:#f8f9fc;
+      --accent:#FFB56B; --accent-2:#FF6B8B; --radius:22px;
+      --shadow:0 10px 24px rgba(0,0,0,.30), 0 2px 10px rgba(0,0,0,.18);
+      --bg-image:url('pairin_title_bg.jpg');
+    }
+    *,*::before,*::after{ box-sizing:border-box; }
+    html,body{ height:100%; margin:0; padding:0; color:var(--ink); background: var(--bg); -webkit-text-size-adjust:100%; }
+    *::-webkit-scrollbar{ display:none; } *{ -ms-overflow-style:none; scrollbar-width:none; }
+
+    .stage{ min-height:100vh; display:grid; place-items:center; background-image: var(--bg-image); background-size: cover; background-position:center; }
+    .card{ width:min(96vw, 720px); margin:20px; border-radius:var(--radius);
+           background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 28%), linear-gradient(135deg, #221a28 0%, #1a1e2a 100%);
+           box-shadow: 0 0 0 1px rgba(255,107,139,.18), var(--shadow);
+           padding:24px 20px; }
+    .card::before{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; }
+
+    .header{ display:flex; align-items:center; gap:12px; }
+    .logo{ width:48px; height:48px; border-radius:12px; }
+    .title{ font-family:'Playfair Display', serif; font-size: clamp(22px, 4vw, 28px); margin:0; }
+    .subtitle{ color:var(--muted); margin:2px 0 14px; font-size:14px; }
+
+    form{ display:grid; gap:16px; }
+    fieldset{ margin:0; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,.14); }
+    legend{ padding:0 6px; color:#fffaf7; font-weight:700; letter-spacing:.02em; }
+    .opts{ display:grid; gap:10px; margin-top:8px; }
+    label.opt{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; background: rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10); cursor:pointer; }
+    input[type=radio]{ appearance:none; width:18px; height:18px; border-radius:50%; border:2px solid #fff; display:grid; place-items:center; }
+    input[type=radio]::before{ content:""; width:10px; height:10px; border-radius:50%; transform:scale(0); background: linear-gradient(135deg, var(--accent), var(--accent-2)); transition: transform .15s ease; }
+    input[type=radio]:checked::before{ transform:scale(1); }
+
+    .actions{ display:flex; gap:10px; margin-top:8px; }
+    .btn{ flex:1; appearance:none; border:0; border-radius:999px; padding:14px 18px; font-weight:800; letter-spacing:.04em; color:#0b1320; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%); box-shadow: 0 6px 18px rgba(255,107,139,.28), 0 2px 10px rgba(0,0,0,.25); cursor:pointer; }
+    .btn.secondary{ background: rgba(255,255,255,.08); color:#fff; box-shadow:none; border:1px solid rgba(255,255,255,.14); }
+
+    .result{ display:none; margin-top:12px; padding:16px; border-radius:14px; background: rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.12); }
+    .result h2{ margin:0 0 8px; font-size:20px; }
+    .tips{ color:var(--muted); font-size:14px; margin:8px 0 0; }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <section class="card" role="group" aria-label="ワイン診断">
+      <div class="header">
+        <img class="logo" src="pairin_logo.png" alt="Pairin ロゴ" />
+        <div>
+          <h1 class="title">ワイン診断</h1>
+          <p class="subtitle">5つの質問に答えるだけで、あなたに合うワインタイプを提案します。</p>
+        </div>
+      </div>
+
+      <form id="quiz" aria-label="診断フォーム">
+        <fieldset>
+          <legend>1. 好みの味わいは？</legend>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="body" value="light" required> 軽め</label>
+            <label class="opt"><input type="radio" name="body" value="medium"> 中庸</label>
+            <label class="opt"><input type="radio" name="body" value="full"> しっかり</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>2. ペアリングしたい料理は？</legend>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="food" value="meat" required> 肉料理</label>
+            <label class="opt"><input type="radio" name="food" value="fish"> 魚料理</label>
+            <label class="opt"><input type="radio" name="food" value="cheese"> チーズ</label>
+            <label class="opt"><input type="radio" name="food" value="washoku"> 和食</label>
+            <label class="opt"><input type="radio" name="food" value="dessert"> デザート</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>3. 飲むときの温度は？</legend>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="temp" value="chilled" required> 冷やして</label>
+            <label class="opt"><input type="radio" name="temp" value="ambient"> 常温で</label>
+            <label class="opt"><input type="radio" name="temp" value="cold"> よく冷やして</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>4. シーンは？</legend>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="scene" value="casual" required> 日常</label>
+            <label class="opt"><input type="radio" name="scene" value="celebration"> お祝い</label>
+            <label class="opt"><input type="radio" name="scene" value="outdoor"> アウトドア</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>5. 価格帯は？</legend>
+          <div class="opts">
+            <label class="opt"><input type="radio" name="price" value="casual" required> カジュアル（〜2,000円）</label>
+            <label class="opt"><input type="radio" name="price" value="middle"> ミドル（2,000〜5,000円）</label>
+            <label class="opt"><input type="radio" name="price" value="rich"> リッチ（5,000円〜）</label>
+          </div>
+        </fieldset>
+
+        <div class="actions">
+          <button class="btn" type="submit" aria-label="診断する">診断する</button>
+          <button class="btn secondary" type="button" id="back" aria-label="タイトルへ戻る">戻る</button>
+        </div>
+      </form>
+
+      <div class="result" id="result" role="region" aria-live="polite">
+        <h2 id="resultTitle">結果</h2>
+        <div id="resultBody"></div>
+        <p class="tips" id="resultTips"></p>
+        <div class="actions" style="margin-top:12px;">
+          <button class="btn" type="button" id="retry" aria-label="もう一度診断する">もう一度</button>
+          <button class="btn secondary" type="button" id="toHome" aria-label="タイトルへ戻る">タイトルへ</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+    const quiz = $('#quiz');
+    const result = $('#result');
+    const titleEl = $('#resultTitle');
+    const bodyEl = $('#resultBody');
+    const tipsEl = $('#resultTips');
+
+    $('#back').addEventListener('click', ()=>{ window.location.href = 'index.html'; });
+    $('#toHome').addEventListener('click', ()=>{ window.location.href = 'index.html'; });
+    $('#retry').addEventListener('click', ()=>{
+      result.style.display = 'none';
+      quiz.style.display = 'grid';
+      quiz.reset();
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+
+    function score(answers){
+      const s = { red:0, white:0, rose:0, sparkling:0 };
+      // 1. 味わい
+      if(answers.body === 'light'){ s.white+=2; s.rose+=1; s.sparkling+=2; }
+      if(answers.body === 'medium'){ s.red+=1; s.white+=1; s.rose+=2; }
+      if(answers.body === 'full'){ s.red+=3; }
+      // 2. 料理
+      if(answers.food === 'meat'){ s.red+=3; }
+      if(answers.food === 'fish'){ s.white+=3; s.rose+=1; }
+      if(answers.food === 'cheese'){ s.red+=1; s.white+=1; s.sparkling+=2; }
+      if(answers.food === 'washoku'){ s.white+=2; s.rose+=2; }
+      if(answers.food === 'dessert'){ s.sparkling+=1; s.rose+=2; }
+      // 3. 温度
+      if(answers.temp === 'chilled'){ s.white+=2; s.rose+=2; }
+      if(answers.temp === 'ambient'){ s.red+=2; }
+      if(answers.temp === 'cold'){ s.sparkling+=3; }
+      // 4. シーン
+      if(answers.scene === 'casual'){ s.white+=1; s.rose+=1; }
+      if(answers.scene === 'celebration'){ s.sparkling+=3; }
+      if(answers.scene === 'outdoor'){ s.rose+=2; s.white+=1; }
+      // 5. 価格帯（重みは控えめ）
+      if(answers.price === 'casual'){ s.white+=1; s.rose+=1; }
+      if(answers.price === 'middle'){ s.red+=1; }
+      if(answers.price === 'rich'){ s.red+=1; s.sparkling+=1; }
+      return s;
+    }
+
+    function describe(type){
+      switch(type){
+        case 'red':
+          return {
+            title: 'あなたにおすすめは「赤ワイン」',
+            body: 'しっかりめの味わいが好みで、肉料理との相性を重視するあなたには赤ワイン。品種ならカベルネ・ソーヴィニヨンやシラー、もう少し軽めならピノ・ノワールも。',
+            tips: 'サーロインや煮込み料理、熟成チーズと好相性。16〜18℃で。'
+          };
+        case 'white':
+          return {
+            title: 'あなたにおすすめは「白ワイン」',
+            body: '爽やかな飲み口や料理に寄り添う万能さを求めるあなたには白。ソーヴィニヨン・ブランやシャルドネ、和食にはリースリングも好相性。',
+            tips: '魚介や野菜、和食全般に。8〜12℃で冷やして。'
+          };
+        case 'rose':
+          return {
+            title: 'あなたにおすすめは「ロゼ」',
+            body: '白の飲みやすさと赤のコクの良いとこ取り。チーズやアジアン、アウトドアの食事にも寄り添う万能タイプ。',
+            tips: '軽い肉料理や魚、スパイス料理と。8〜12℃で。'
+          };
+        case 'sparkling':
+        default:
+          return {
+            title: 'あなたにおすすめは「スパークリング」',
+            body: 'お祝いの席やよく冷えた一杯を楽しみたいあなたに。シャンパーニュ方式の辛口や、カジュアルならプロセッコも。',
+            tips: '前菜から食後まで幅広く。5〜8℃でしっかり冷やして。'
+          };
+      }
+    }
+
+    quiz.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const fd = new FormData(quiz);
+      const a = Object.fromEntries(fd.entries());
+      const s = score(a);
+      const best = Object.entries(s).sort((a,b)=> b[1]-a[1])[0][0];
+      const d = describe(best);
+
+      titleEl.textContent = d.title;
+      bodyEl.textContent = d.body;
+      tipsEl.textContent = d.tips;
+
+      quiz.style.display = 'none';
+      result.style.display = 'block';
+      result.scrollIntoView({ behavior:'smooth' });
+    });
+  </script>
+</body>
+</html>
+
