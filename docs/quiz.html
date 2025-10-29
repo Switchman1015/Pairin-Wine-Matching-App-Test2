@@ -30,11 +30,19 @@
     .title{ font-family:'Playfair Display', serif; font-size: clamp(22px, 4vw, 28px); margin:0; }
     .subtitle{ color:var(--muted); margin:2px 0 10px; font-size:14px; }
 
-    .step{ display:flex; flex-direction:column; gap:14px; }
-    .qtext{ margin:6px 2px 0; font-size: clamp(16px, 4.5vw, 18px); font-weight:700; }
-    .opts2{ display:grid; gap:10px; grid-template-columns: 1fr; }
-    .optbtn{ appearance:none; border:0; border-radius:14px; padding:16px 16px; font-weight:800; font-size:16px; letter-spacing:.02em; color:#0b1320; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%); box-shadow: 0 6px 18px rgba(255,107,139,.28), 0 2px 10px rgba(0,0,0,.25); cursor:pointer; }
-    .optbtn.secondary{ background: rgba(255,255,255,.08); color:#fff; box-shadow:none; border:1px solid rgba(255,255,255,.14); }
+    .step{ display:flex; flex-direction:column; gap:14px; align-items:center; }
+    .qtext{ margin:6px 2px 0; font-size: clamp(16px, 4.5vw, 18px); font-weight:700; text-align:center; }
+
+    .swipe{ position:relative; width:min(92vw, 520px); height:min(56vh, 280px); max-height:320px; display:grid; place-items:center; touch-action:none; }
+    .card-face{ position:relative; width:100%; height:100%; border-radius:18px; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 28%), linear-gradient(135deg, #241c2b 0%, #1a1e2a 100%); box-shadow: 0 0 0 1px rgba(255,107,139,.18), var(--shadow); display:grid; grid-template-rows:auto 1fr auto; align-items:center; padding:16px; transition: transform .16s ease; will-change: transform; }
+    .labels{ width:100%; display:flex; justify-content:space-between; font-weight:800; font-size:14px; letter-spacing:.02em; }
+    .labels .l{ color: var(--accent); }
+    .labels .r{ color: var(--accent-2); }
+    .hint{ align-self:end; font-size:12px; color:var(--muted); opacity:.8; }
+
+    .badge{ position:absolute; top:14px; padding:8px 12px; border-radius:999px; font-weight:800; font-size:13px; color:#0b1320; box-shadow: 0 6px 18px rgba(0,0,0,.25); opacity:.15; user-select:none; pointer-events:none; }
+    .badge.left{ left:14px; background: var(--accent); }
+    .badge.right{ right:14px; background: var(--accent-2); }
 
     .meta{ display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:12px; margin-top:2px; }
     .progress{ height:6px; background: rgba(255,255,255,.10); border-radius:999px; overflow:hidden; }
@@ -144,24 +152,62 @@
       const q = questions[current];
       stepEl.innerHTML = `
         <div class="qtext">${current+1}. ${q.text}</div>
-        <div class="opts2">
-          <button class="optbtn" data-which="a" type="button">${q.a.label}</button>
-          <button class="optbtn secondary" data-which="b" type="button">${q.b.label}</button>
+        <div class="swipe" id="swipe" aria-label="左右にスワイプして選択">
+          <div class="badge left" id="badgeL">${q.a.label}</div>
+          <div class="badge right" id="badgeR">${q.b.label}</div>
+          <div class="card-face" id="card">
+            <div class="labels"><span class="l">左: ${q.a.label}</span><span class="r">右: ${q.b.label}</span></div>
+            <div></div>
+            <div class="hint">左にスワイプ / 右にスワイプ</div>
+          </div>
         </div>
       `;
       stepText.textContent = `${current+1} / ${questions.length}`;
       bar.style.width = `${Math.round((current)/questions.length*100)}%`;
-      stepEl.querySelectorAll('.optbtn').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const which = btn.getAttribute('data-which');
-          const delta = which === 'a' ? q.a.score : q.b.score;
-          // quick tap animation
-          btn.animate([{ transform:'scale(1)' }, { transform:'scale(0.98)' }, { transform:'scale(1)' }], { duration:160, easing:'ease-out' });
-          applyScore(delta);
-          current += 1;
-          render();
-        });
+
+      const swipe = document.getElementById('swipe');
+      const card = document.getElementById('card');
+      const badgeL = document.getElementById('badgeL');
+      const badgeR = document.getElementById('badgeR');
+
+      let startX = 0, dx = 0, dragging = false, pointerId = null;
+      const THRESH = 80;
+      function setBadges(){
+        const p = Math.min(1, Math.abs(dx)/THRESH);
+        badgeL.style.opacity = dx < 0 ? String(0.15 + 0.85*p) : '0.15';
+        badgeR.style.opacity = dx > 0 ? String(0.15 + 0.85*p) : '0.15';
+      }
+      function setTransform(anim){
+        const rot = Math.max(-12, Math.min(12, dx*0.06));
+        if(anim){ card.style.transition = 'transform .16s ease'; } else { card.style.transition = 'none'; }
+        card.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
+        setBadges();
+      }
+      function release(){
+        if(Math.abs(dx) >= THRESH){
+          const which = dx > 0 ? 'b' : 'a';
+          const exitX = dx > 0 ? window.innerWidth * 0.6 + 200 : -(window.innerWidth * 0.6 + 200);
+          card.style.transition = 'transform .22s ease-out';
+          card.style.transform = `translateX(${exitX}px) rotate(${dx>0?12:-12}deg)`;
+          setTimeout(()=>{
+            const delta = which === 'a' ? q.a.score : q.b.score;
+            applyScore(delta);
+            current += 1;
+            render();
+          }, 200);
+        }else{
+          dx = 0; setTransform(true);
+        }
+        dragging = false; pointerId = null;
+      }
+      swipe.addEventListener('pointerdown', (e)=>{
+        dragging = true; pointerId = e.pointerId; swipe.setPointerCapture(pointerId); startX = e.clientX; dx = 0; setTransform(false);
       });
+      swipe.addEventListener('pointermove', (e)=>{
+        if(!dragging) return; dx = e.clientX - startX; setTransform(false);
+      });
+      swipe.addEventListener('pointerup', release);
+      swipe.addEventListener('pointercancel', release);
     }
 
     render();
