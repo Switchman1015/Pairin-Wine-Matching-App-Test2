@@ -53,7 +53,7 @@
     <div class="ambient" aria-hidden="true"></div>
     <section class="card" role="group" aria-label="タイトルと開始ボタン">
       <img class="logo" src="pairin_logo.png" alt="Pairin ロゴ" />
-      <h1 class="wordmark" aria-label="アプリ名">Pairin</h1>
+      <h1 class="wordmark" aria-label="アプリ名: Pairin">Pairin</h1>
       <p class="caption">あなたとワインをマッチング</p>
       <button class="cta" type="button" aria-label="診断をはじめる">診断をはじめる</button>
     </section>
@@ -76,12 +76,18 @@
         el.style.setProperty('--sz', size+'px');
         el.style.left = (Math.random()*100)+'%';
         el.style.animationDuration = dur+'s';
-        el.style.animationDelay = (-Math.random()*dur)+'s'; // 初期から画面内に存在
+        el.style.animationDelay = (-Math.random()*dur)+'s'; // 初期から画面上に存在
         ambient.appendChild(el);
       }
 
       const btn = document.querySelector('.cta');
-      btn.addEventListener('click', ()=>{ btn.animate([{ transform:'scale(1)' },{ transform:'scale(0.98)' },{ transform:'scale(1)' }], { duration:160, easing:'ease-out' }); });
+      btn.addEventListener('click', ()=>{
+        btn.animate(
+          [{ transform:'scale(1)' },{ transform:'scale(0.98)' },{ transform:'scale(1)' }],
+          { duration:160, easing:'ease-out' }
+        );
+        setTimeout(()=>{ window.location.href = 'quiz.html'; }, 140);
+      });
     })();
   </script>
 </body>
