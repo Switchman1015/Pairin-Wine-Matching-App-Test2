@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Micro Mecha Gauntlet (Proto)</title>
+    <style>
+      html, body { height: 100%; margin: 0; background: #0e0e12; color: #c9d1d9; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+      #root { height: 100%; display: grid; place-items: center; }
+      canvas { background: #0e0e12; box-shadow: 0 0 0 1px #222; image-rendering: crisp-edges; }
+      #hud { position: absolute; inset: 0; pointer-events: none; }
+      .bar { position: absolute; left: 16px; right: 16px; height: 10px; background: #1c1f26; border: 1px solid #222; }
+      #hp { bottom: 16px; }
+      #xp { bottom: 34px; }
+      .bar > .fill { height: 100%; background: linear-gradient(90deg, #7ee787, #4fbf76); }
+      #xp .fill { background: linear-gradient(90deg, #79c0ff, #3da9fc); }
+      #wave { position: absolute; top: 10px; left: 16px; font-weight: 600; }
+      #timer { position: absolute; top: 10px; right: 16px; }
+      #draft { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; }
+      #cards { display: grid; grid-template-columns: repeat(3, 260px); gap: 16px; }
+      .card { pointer-events: auto; background: #10141a; border: 1px solid #222; border-radius: 8px; padding: 12px; cursor: pointer; }
+      .card:hover { outline: 2px solid #3da9fc; }
+      .card h3 { margin: 0 0 6px 0; font-size: 16px; }
+      .tags { color: #9da3ae; font-size: 12px; margin-top: 6px; }
+      #controls { position: absolute; bottom: 52px; right: 16px; color: #9da3ae; font-size: 12px; }
+      #reroll { margin-top: 8px; display: inline-block; pointer-events: auto; background: #0f1722; border: 1px solid #2a3342; color: #c9d1d9; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <canvas id="game" width="900" height="600"></canvas>
+      <div id="hud">
+        <div id="wave">Wave 1</div>
+        <div id="timer">0.0s</div>
+        <div id="xp" class="bar"><div class="fill" style="width:0%"></div></div>
+        <div id="hp" class="bar"><div class="fill" style="width:100%"></div></div>
+        <div id="controls">WASD/矢印: 移動・1/2/3: 選択・R: リロール</div>
+      </div>
+      <div id="draft">
+        <div>
+          <div id="cards"></div>
+          <div style="text-align:center"><button id="reroll">リロール (残り <span id="rrleft">1</span>)</button></div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+  </html>
+
